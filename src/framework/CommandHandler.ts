@@ -8,17 +8,28 @@ import CustomClient from "./CustomClient";
 
 export default class CommandHandler {
   commands: Collection<string, Command>;
+  categories: Collection<string, Collection<string, Command>>;
   client: CustomClient;
+  prefix;
 
   constructor(client: CustomClient) {
     this.commands = new Collection();
+    this.categories = new Collection();
+    this.prefix = prefix;
+
     this.client = client;
   }
 
   load(dir: string, file: string) {
     const commandFile = require(`${dir}/${file.replace("\.ts|\.js", "")}`).default;
     const command: Command = new commandFile();
+
+    if (!this.categories.has(command.category)) {
+      this.categories.set(command.category, new Collection());
+    }
+
     this.commands.set(command.name, command);
+    this.categories.get(command.category)?.set(command.name, command);
   }
 
   loadAllFromDir(dir: string) {

@@ -150,18 +150,18 @@ export default class Command {
         if (!matchedChannel) return await message.reply("Channel not found.");
         commandArgs[arg.name] = matchedChannel;
       } else if (arg.match === "last") {
-        commandArgs[arg.name] = message.content.split(" ").slice(-1)[0];
+        commandArgs[arg.name] = messageWords.splice(-1, 1).join(" ");
       } else if (arg.match === "notLast") {
-        commandArgs[arg.name] = message.content.split(" ").slice(0, -1).join(" ");
+        commandArgs[arg.name] = messageWords.splice(0, messageWords.length - 1).join(" ");
       } else if (arg.match === "word") {
         commandArgs[arg.name] = messageWords.splice(0, 1)[0];
       }
     };
 
-    await this.execute(message, commandArgs);
+    await this.execute(message, commandArgs, client);
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentReturnValue): Promise<any> { }
+  async execute(message: Message | CommandInteraction, args: ArgumentReturnValue, client?: CustomClient): Promise<any> { }
 
   async handleInteraction(interaction: CommandInteraction, client: CustomClient) {
     let commandArgs: ArgumentReturnValue = {};
