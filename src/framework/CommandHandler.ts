@@ -54,7 +54,9 @@ export default class CommandHandler {
 
   setupMessageHandler() {
     this.client.on("messageCreate", async message => {
-      if (message.channel.id === "819649988757291015" && message.author.id !== this.client.user?.id) {
+      if (message.author.id === this.client.user?.id) return;
+
+      if (message.channel.id === "819649988757291015") {
         this.commands.get("tts")?.execute(message, { content: message.content });
       }
 
