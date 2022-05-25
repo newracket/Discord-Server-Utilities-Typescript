@@ -16,7 +16,7 @@ export default class CommandHandler {
   }
 
   load(dir: string, file: string) {
-    const commandFile = require(`${dir}/${file.replace(".ts", "")}`).default;
+    const commandFile = require(`${dir}/${file.replace("\.ts|\.js", "")}`).default;
     const command: Command = new commandFile();
     this.commands.set(command.name, command);
   }
@@ -24,7 +24,7 @@ export default class CommandHandler {
   loadAllFromDir(dir: string) {
     const commandFiles = fs.readdirSync(path.join(__dirname, dir));
     commandFiles.forEach(commandFile => {
-      if (commandFile.endsWith(".ts")) {
+      if (commandFile.endsWith(".ts") || commandFile.endsWith(".js")) {
         return this.load(dir, commandFile);
       }
 

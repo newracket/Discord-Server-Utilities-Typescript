@@ -4,7 +4,7 @@
   "description": "",
   "main": "discord-server-utilities.ts",
   "scripts": {
-    "start": "ts-node-dev --respawn src/discord-server-utilities.ts"
+    "start": "ts-node-dev --respawn --ignore-watch jsons/ src/discord-server-utilities.ts"
   },
   "author": "",
   "license": "ISC",
