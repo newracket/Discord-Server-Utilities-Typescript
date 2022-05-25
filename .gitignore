@@ -1,0 +1,10 @@
+node_modules/
+package-lock.json
+
+dist/
+
+config.json
+
+muted.json
+nicks.json
+strikes.json
