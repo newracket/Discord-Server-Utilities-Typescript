@@ -81,46 +81,30 @@ export default class Command {
     let commandArgs: ArgumentReturnValue = {};
 
     for (const arg of this.args) {
-      if (arg.match === "content") {
-        if (messageWords.length === 0 && arg.required) return await message.reply("Incorrect format.");
+      switch (arg.match) {
+        case "content": {
+          if (messageWords.length === 0 && arg.required) return await message.reply("Incorrect format.");
 
-        commandArgs[arg.name] = messageWords.join(" ");
-        messageWords.splice(0, messageWords.length);
-      } else if (arg.match === "role") {
-        const roles = await message.guild?.roles.fetch();
-        if (roles === undefined) return await message.reply("Error: Guild contains no roles.");
-
-        let matchedRole = await Utils.resolveRole(messageWords.join(" "), roles);
-        if (!matchedRole) {
-          matchedRole = await this.findRole(roles, messageWords);
-        } else {
+          commandArgs[arg.name] = messageWords.join(" ");
           messageWords.splice(0, messageWords.length);
-        }
+          break;
+        } case "role": {
+          const roles = await message.guild?.roles.fetch();
+          if (roles === undefined) return await message.reply("Error: Guild contains no roles.");
 
-        if (!matchedRole) return await message.reply("Role not found.");
-        commandArgs[arg.name] = matchedRole;
-      } else if (arg.match === "member") {
-        const members = await message.guild?.members.fetch();
-        if (members === undefined) return await message.reply("Error: Guild contains no members.");
+          let matchedRole = await Utils.resolveRole(messageWords.join(" "), roles);
+          if (!matchedRole) {
+            matchedRole = await this.findRole(roles, messageWords);
+          } else {
+            messageWords.splice(0, messageWords.length);
+          }
 
-        let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
-        if (!matchedMember) {
-          matchedMember = await this.findMember(members, messageWords);
-        } else {
-          messageWords.splice(0, messageWords.length);
-        }
-
-        if (!matchedMember) return await message.reply("Member not found");
-        commandArgs[arg.name] = matchedMember;
-      } else if (arg.match === "members") {
-        const members = await message.guild?.members.fetch();
-        if (members === undefined) return await message.reply("Error: Guild contains no members.");
-
-        const matchedMembers = [];
-        let oldLength = -1;
-
-        while (messageWords.length !== oldLength) {
-          oldLength = messageWords.length;
+          if (!matchedRole) return await message.reply("Role not found.");
+          commandArgs[arg.name] = matchedRole;
+          break;
+        } case "member": {
+          const members = await message.guild?.members.fetch();
+          if (members === undefined) return await message.reply("Error: Guild contains no members.");
 
           let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
           if (!matchedMember) {
@@ -129,32 +113,57 @@ export default class Command {
             messageWords.splice(0, messageWords.length);
           }
 
-          if (matchedMember) {
-            matchedMembers.push(matchedMember);
+          if (!matchedMember) return await message.reply("Member not found");
+          commandArgs[arg.name] = matchedMember;
+          break;
+        } case "members": {
+          const members = await message.guild?.members.fetch();
+          if (members === undefined) return await message.reply("Error: Guild contains no members.");
+
+          const matchedMembers = [];
+          let oldLength = -1;
+
+          while (messageWords.length !== oldLength) {
+            oldLength = messageWords.length;
+
+            let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
+            if (!matchedMember) {
+              matchedMember = await this.findMember(members, messageWords);
+            } else {
+              messageWords.splice(0, messageWords.length);
+            }
+
+            if (matchedMember) {
+              matchedMembers.push(matchedMember);
+            }
           }
+
+          if (matchedMembers.length === 0) return await message.reply("Member not found");
+          commandArgs[arg.name] = matchedMembers;
+          break;
+        } case "channel": {
+          const channels = await message.guild?.channels.fetch();
+          if (channels === undefined) return await message.reply("Error: Guild contains no channels.");
+
+          let matchedChannel = await Utils.resolveChannel(messageWords.join(" "), channels);
+          if (!matchedChannel) {
+            matchedChannel = await this.findChannel(channels, messageWords);
+          } else {
+            messageWords.splice(0, messageWords.length);
+          }
+
+          if (!matchedChannel) return await message.reply("Channel not found.");
+          commandArgs[arg.name] = matchedChannel;
+          break;
+        } case "last": {
+          commandArgs[arg.name] = messageWords.splice(-1, 1).join(" ");
+          break;
+        } case "notLast": {
+          commandArgs[arg.name] = messageWords.splice(0, messageWords.length - 1).join(" ");
+          break;
+        } case "word": {
+          commandArgs[arg.name] = messageWords.splice(0, 1)[0];
         }
-
-        if (matchedMembers.length === 0) return await message.reply("Member not found");
-        commandArgs[arg.name] = matchedMembers;
-      } else if (arg.match === "channel") {
-        const channels = await message.guild?.channels.fetch();
-        if (channels === undefined) return await message.reply("Error: Guild contains no channels.");
-
-        let matchedChannel = await Utils.resolveChannel(messageWords.join(" "), channels);
-        if (!matchedChannel) {
-          matchedChannel = await this.findChannel(channels, messageWords);
-        } else {
-          messageWords.splice(0, messageWords.length);
-        }
-
-        if (!matchedChannel) return await message.reply("Channel not found.");
-        commandArgs[arg.name] = matchedChannel;
-      } else if (arg.match === "last") {
-        commandArgs[arg.name] = messageWords.splice(-1, 1).join(" ");
-      } else if (arg.match === "notLast") {
-        commandArgs[arg.name] = messageWords.splice(0, messageWords.length - 1).join(" ");
-      } else if (arg.match === "word") {
-        commandArgs[arg.name] = messageWords.splice(0, 1)[0];
       }
     };
 
@@ -167,16 +176,15 @@ export default class Command {
     let commandArgs: ArgumentReturnValue = {};
 
     interaction.options.data.forEach(arg => {
-      if (arg.type === "USER") {
-        commandArgs[arg.name] = this.getInteractionOptionValue(arg);
-      } else if (arg.type === "ROLE") {
-        commandArgs[arg.name] = this.getInteractionOptionValue(arg);
-      } else if (arg.type === "CHANNEL") {
-        commandArgs[arg.name] = this.getInteractionOptionValue(arg);
-      } else if (arg.type === "SUB_COMMAND") {
+      if (arg.type === "SUB_COMMAND") {
         commandArgs = this.getInteractionOptionValue(arg);
       } else {
         commandArgs[arg.name] = this.getInteractionOptionValue(arg);
+      }
+
+      switch (arg.type) {
+        case "SUB_COMMAND": commandArgs[arg.name] = this.getInteractionOptionValue(arg); break;
+        default: commandArgs[arg.name] = this.getInteractionOptionValue(arg);
       }
     });
 
@@ -185,23 +193,21 @@ export default class Command {
   }
 
   getInteractionOptionValue(options: CommandInteractionOption) {
-    if (options.type === "USER") {
-      return options.member as GuildMember;
-    } else if (options.type === "ROLE") {
-      return options.role as Role;
-    } else if (options.type === "CHANNEL") {
-      return options.channel as GuildChannel | ThreadChannel;
-    } else if (options.type === "SUB_COMMAND") {
-      const commandArgs: any = {};
-      commandArgs.type = options.name;
+    switch (options.type) {
+      case "USER": return options.member as GuildMember;
+      case "ROLE": return options.role as Role;
+      case "CHANNEL": return options.channel as GuildChannel | ThreadChannel;
+      case "SUB_COMMAND": {
+        const commandArgs: any = {};
+        commandArgs.type = options.name;
 
-      options.options?.forEach(o => {
-        commandArgs[o.name] = this.getInteractionOptionValue(o);
-      });
+        options.options?.forEach(o => {
+          commandArgs[o.name] = this.getInteractionOptionValue(o);
+        });
 
-      return commandArgs;
-    } else {
-      return options.value as string;
+        return commandArgs;
+      }
+      default: return options.value as string;
     }
   }
 
@@ -225,6 +231,8 @@ export default class Command {
     for (const [i, word] of words.entries()) {
       currentMember += word + " ";
       const matchedMember = await Utils.resolveMember(currentMember, members);
+      console.log(currentMember);
+      console.log(matchedMember);
 
       if (matchedMember !== undefined) {
         words.splice(0, i + 1);

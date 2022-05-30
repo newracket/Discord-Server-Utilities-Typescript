@@ -1,6 +1,5 @@
 import { CommandInteraction, GuildMember, Message, Role } from "discord.js";
 import Command from "../../../framework/Command";
-import { ArgumentReturnValue } from "../../../framework/Typings";
 
 export default class GrantRoleCommand extends Command {
   constructor() {
@@ -24,16 +23,22 @@ export default class GrantRoleCommand extends Command {
         type: "USER",
         required: true,
         description: "Member to grant role to",
-        match: "member"
+        match: "members"
       }]
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentReturnValue) {
-    const highestRole = (message.member as GuildMember).roles.highest;
-    if (highestRole.comparePositionTo(args.role as Role) <= 0) return message.reply("The role you are trying to assign is higher than your highest role.");
+  async execute(message: Message | CommandInteraction, args: { member: GuildMember | GuildMember[], role: Role }) {
+    if (!Array.isArray(args.member) && args.member instanceof GuildMember) {
+      args.member = [args.member];
+    }
 
-    await (args.member as GuildMember).roles.add(args.role as Role);
-    await message.reply(`${(args.role as Role).name} has been given to: ${args.member}.`);
+    args.member.forEach(async m => {
+      const highestRole = (message.member as GuildMember).roles.highest;
+      if (highestRole.comparePositionTo(args.role) <= 0) return message.reply("The role you are trying to assign is higher than your highest role.");
+
+      await m.roles.add(args.role as Role);
+      await message.reply(`${args.role.name} has been given to: ${m}.`);
+    });
   }
 }
