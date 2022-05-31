@@ -31,7 +31,7 @@ export default class GiveCasCommand extends Command {
   async execute(message: Message | CommandInteraction, args: { member: GuildMember[] | GuildMember, times: number }) {
     this.messagesToSend = {};
 
-    if (isNaN(Number(args.times))) {
+    if (typeof args.times !== "number") {
       args.times = 1;
     }
 
