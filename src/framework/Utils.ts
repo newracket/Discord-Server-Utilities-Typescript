@@ -10,7 +10,7 @@ export default class Utils {
     if (messageOrChannels == undefined) throw "Error when resolving: Message not defined";
     if (!(messageOrChannels instanceof Message) && !(messageOrChannels instanceof Collection) && !(messageOrChannels instanceof CommandInteraction)) return undefined;
 
-    const idMatch = text.match(/<#\d*>/g);
+    const idMatch = text.trim().match(/^<#\d*>$/g);
     if (idMatch !== null) {
       text = idMatch[0].replace(/[<#>]/g, "");
     }
@@ -45,7 +45,7 @@ export default class Utils {
     if (messageOrRoles == undefined) throw "Error when resolving: Message not defined";
     if (!(messageOrRoles instanceof Message) && !(messageOrRoles instanceof Collection) && !(messageOrRoles instanceof CommandInteraction)) return undefined;
 
-    const idMatch = text.match(/<@&\d*>/g);
+    const idMatch = text.trim().match(/^<@&\d*>$/g);
     if (idMatch !== null) {
       text = idMatch[0].replace(/[<@&>]/g, "");
     }
@@ -66,9 +66,9 @@ export default class Utils {
     if (messageOrMembers == undefined) throw "Error when resolving: Message not defined";
     if (!(messageOrMembers instanceof Message) && !(messageOrMembers instanceof Collection) && !(messageOrMembers instanceof CommandInteraction)) return undefined;
 
-    const idMatch = text.trim().match(/<@!\d*>/g);
+    const idMatch = text.trim().match(/^<@\d*>$/g);
     if (idMatch !== null && idMatch[0].trim() === text.trim()) {
-      text = idMatch[0].replace(/[<@!>]/g, "");
+      text = idMatch[0].replace(/[<@>]/g, "");
     }
 
     if (messageOrMembers instanceof Message || messageOrMembers instanceof CommandInteraction) {
