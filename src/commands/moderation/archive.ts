@@ -8,22 +8,28 @@ export default class ArchiveCommand extends Command {
       name: "archive",
       aliases: [],
       description: "Archives channel",
-      usage: "archive <channel name> OR archive <channel id> OR archive <channel mention>",
+      usage:
+        "archive <channel name> OR archive <channel id> OR archive <channel mention>",
       category: "Moderation",
       channel: "guild",
-      userPermissions: ['MANAGE_CHANNELS'],
+      userPermissions: ["MANAGE_CHANNELS"],
       slashCommand: true,
-      args: [{
-        name: "channel",
-        type: "CHANNEL",
-        match: "channel",
-        required: true,
-        description: "Channel to archive."
-      }]
+      args: [
+        {
+          name: "channel",
+          type: "CHANNEL",
+          match: "channel",
+          required: true,
+          description: "Channel to archive.",
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentChannelReturnValue) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentChannelReturnValue
+  ) {
     if (args.channel instanceof GuildChannel) {
       await args.channel.setParent("649775722306732040");
     } else {

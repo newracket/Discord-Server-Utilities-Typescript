@@ -12,18 +12,23 @@ export default class MathCommand extends Command {
       aliases: [],
       category: "Misc",
       slashCommand: true,
-      args: [{
-        name: "expression",
-        description: "Math function to evaluate",
-        type: "STRING",
-        match: "content",
-        required: true
-      }]
+      args: [
+        {
+          name: "expression",
+          description: "Math function to evaluate",
+          type: "STRING",
+          match: "content",
+          required: true,
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentContentReturnValue) {
-    let evaledCode
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentContentReturnValue
+  ) {
+    let evaledCode;
     try {
       evaledCode = evaluate(args.expression);
     } catch (error) {
@@ -33,7 +38,7 @@ export default class MathCommand extends Command {
     const embed = new MessageEmbed({
       title: "Math Evaluator",
       description: `\`\`\`js\n>${args.expression}\n${evaledCode}\`\`\``,
-      color: "BLUE"
+      color: "BLUE",
     });
 
     await message.reply({ embeds: [embed] });

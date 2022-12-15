@@ -13,19 +13,24 @@ export default class UnmuteCommand extends Command {
       usage: "unmute <mention member/member id/member nickname>",
       category: "Moderation",
       channel: "guild",
-      userPermissions: ['ADMINISTRATOR'],
+      userPermissions: ["ADMINISTRATOR"],
       slashCommand: true,
-      args: [{
-        name: "member",
-        match: "member",
-        type: "USER",
-        required: true,
-        description: "Member to unmute"
-      }]
+      args: [
+        {
+          name: "member",
+          match: "member",
+          type: "USER",
+          required: true,
+          description: "Member to unmute",
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: { member: GuildMember }) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: { member: GuildMember }
+  ) {
     await UnmuteCommand.unmute(args.member);
 
     await message.reply(`${args.member} has been unmuted.`);
@@ -36,21 +41,29 @@ export default class UnmuteCommand extends Command {
     const adminID = "633163401907929088";
     await member.roles.remove(mutedID);
 
-    const mutedJSON: { mutedAdmins: string[], unmuteQue: { member: string, time: number }[] } = mutedJSONManager.get();
-    if (!("mutedAdmins" in mutedJSON)) {
+    const mutedJSON: {
+      mutedAdmins: string[];
+      unmuteQue: { member: string; time: number }[];
+    } = mutedJSONManager.get();
+    if (!mutedJSON.mutedAdmins) {
       mutedJSON.mutedAdmins = [];
     }
 
     if (mutedJSON.mutedAdmins.includes(member.id)) {
-      mutedJSON.mutedAdmins = mutedJSON.mutedAdmins.filter(id => id != member.id);
-      mutedJSON.unmuteQue = mutedJSON.unmuteQue.filter(e => e.member !== member.id);
+      mutedJSON.mutedAdmins = mutedJSON.mutedAdmins.filter(
+        (id) => id != member.id
+      );
+      mutedJSON.unmuteQue = mutedJSON.unmuteQue.filter(
+        (e) => e.member !== member.id
+      );
       mutedJSONManager.set(mutedJSON);
       await member.roles.add(adminID);
     }
   }
 
   static async checkForUnmutes(guild: Guild) {
-    const unmuteQue: { member: string, time: number }[] = mutedJSONManager.getValue("unmuteQue");
+    const unmuteQue: { member: string; time: number }[] =
+      mutedJSONManager.getValue("unmuteQue");
     const now = new Date().getTime();
 
     for (const id of unmuteQue) {
@@ -58,8 +71,11 @@ export default class UnmuteCommand extends Command {
         const memberObject: GuildMember = await guild.members.fetch(id.member);
         await this.unmute(memberObject);
       }
-    };
+    }
 
-    mutedJSONManager.setValue("unmuteQue", unmuteQue.filter(e => e.time > now));
+    mutedJSONManager.setValue(
+      "unmuteQue",
+      unmuteQue.filter((e) => e.time > now)
+    );
   }
 }

@@ -15,7 +15,8 @@ export default class CustomClient extends Client {
     this.token = token;
     this.commandHandler = new CommandHandler(this);
     this.ownerID = options.ownerID;
-    this.ignorePermissions = options?.ignorePermissions !== undefined ? options.ignorePermissions : [];
+    this.ignorePermissions =
+      options?.ignorePermissions !== undefined ? options.ignorePermissions : [];
   }
 
   init() {

@@ -6,7 +6,6 @@ import nicksJSON from "../../jsons/nicks.json";
 import ranksJSON from "../../jsons/ranks.json";
 import strikesJSON from "../../jsons/strikes.json";
 
-
 export default class JSONFileManager {
   fileName: string;
   importedJSONs = { mutedJSON, nicksJSON, ranksJSON, strikesJSON };
@@ -15,16 +14,27 @@ export default class JSONFileManager {
     this.fileName = fileName + ".json";
 
     if (!fs.existsSync(path.join(__dirname, `../../jsons/${this.fileName}`))) {
-      fs.writeFileSync(path.join(__dirname, `../../jsons/${this.fileName}`), "{}");
+      fs.writeFileSync(
+        path.join(__dirname, `../../jsons/${this.fileName}`),
+        "{}"
+      );
     }
   }
 
   get() {
-    return JSON.parse(fs.readFileSync(path.join(__dirname, `../../jsons/${this.fileName}`), "utf8"));
+    return JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, `../../jsons/${this.fileName}`),
+        "utf8"
+      )
+    );
   }
 
   set(value: any) {
-    fs.writeFileSync(path.join(__dirname, `../../jsons/${this.fileName}`), JSON.stringify(value));
+    fs.writeFileSync(
+      path.join(__dirname, `../../jsons/${this.fileName}`),
+      JSON.stringify(value)
+    );
 
     return value;
   }
@@ -69,7 +79,9 @@ export default class JSONFileManager {
 
   getKeyFromValue(value: string) {
     const jsonObject = this.get();
-    const key = Object.keys(jsonObject).find(key => jsonObject[key] === value);
+    const key = Object.keys(jsonObject).find(
+      (key) => jsonObject[key] === value
+    );
 
     return key ? key : "";
   }

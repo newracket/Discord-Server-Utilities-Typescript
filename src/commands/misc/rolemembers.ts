@@ -6,30 +6,35 @@ export default class RoleMembersCommand extends Command {
   constructor() {
     super({
       name: "rolemembers",
-      aliases: ['rm'],
+      aliases: ["rm"],
       description: "Lists all members with specific role",
       usage: "rolemembers <role name>",
       category: "Misc",
       channel: "guild",
       slashCommand: true,
-      args: [{
-        name: "role",
-        type: "ROLE",
-        description: "Role to list members for",
-        required: true,
-        match: "role"
-      }]
+      args: [
+        {
+          name: "role",
+          type: "ROLE",
+          description: "Role to list members for",
+          required: true,
+          match: "role",
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentRoleReturnValue) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentRoleReturnValue
+  ) {
     const roleMembers = [...args.role.members.values()];
     if (roleMembers.length == 0) return message.reply("No one has that role");
 
     const embed = new MessageEmbed({
       color: args.role.hexColor,
       title: `Members with ${args.role.name} role`,
-      description: roleMembers.join(" ")
+      description: roleMembers.join(" "),
     });
 
     await message.reply({ embeds: [embed] });

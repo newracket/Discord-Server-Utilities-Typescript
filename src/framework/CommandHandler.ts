@@ -1,10 +1,13 @@
-import { ApplicationCommandData, Collection, CommandInteraction } from "discord.js";
+import {
+  ApplicationCommandData,
+  Collection,
+  CommandInteraction,
+} from "discord.js";
 import fs from "fs";
 import path from "path";
 import { prefix } from "../../config.json";
 import Command from "./Command";
 import CustomClient from "./CustomClient";
-
 
 export default class CommandHandler {
   commands: Collection<string, Command>;
@@ -21,7 +24,10 @@ export default class CommandHandler {
   }
 
   load(dir: string, file: string) {
-    const commandFile = require(`${dir}/${file.replace("\.ts|\.js", "")}`).default;
+    const commandFile = require(`${dir}/${file.replace(
+      ".ts|.js",
+      ""
+    )}`).default;
     const command: Command = new commandFile();
 
     if (!this.categories.has(command.category)) {
@@ -34,12 +40,14 @@ export default class CommandHandler {
 
   loadAllFromDir(dir: string) {
     const commandFiles = fs.readdirSync(path.join(__dirname, dir));
-    commandFiles.forEach(commandFile => {
+    commandFiles.forEach((commandFile) => {
       if (commandFile.endsWith(".ts") || commandFile.endsWith(".js")) {
         return this.load(dir, commandFile);
       }
 
-      const commandFileObject = fs.lstatSync(path.join(__dirname, `${dir}/${commandFile}`));
+      const commandFileObject = fs.lstatSync(
+        path.join(__dirname, `${dir}/${commandFile}`)
+      );
       if (commandFileObject.isDirectory()) {
         this.loadAllFromDir(`${dir}/${commandFile}`);
       }
@@ -53,11 +61,13 @@ export default class CommandHandler {
   }
 
   setupMessageHandler() {
-    this.client.on("messageCreate", async message => {
+    this.client.on("messageCreate", async (message) => {
       if (message.author.id === this.client.user?.id) return;
 
       if (message.channel.id === "819649988757291015") {
-        this.commands.get("tts")?.execute(message, { content: message.content });
+        this.commands
+          .get("tts")
+          ?.execute(message, { content: message.content });
       }
 
       if (!message.content.startsWith(prefix)) return;
@@ -67,7 +77,9 @@ export default class CommandHandler {
       let commandObject = this.commands.get(command);
 
       if (commandObject === undefined) {
-        const matchedAliases = this.client.commandHandler.commands.filter(e => e.aliases.includes(command));
+        const matchedAliases = this.client.commandHandler.commands.filter((e) =>
+          e.aliases.includes(command)
+        );
 
         if (matchedAliases.size !== 0) {
           commandObject = matchedAliases.first();
@@ -76,9 +88,12 @@ export default class CommandHandler {
 
       if (commandObject !== undefined) {
         try {
-          await commandObject.checkPerms(this.client, message, this.client.ignorePermissions);
-        }
-        catch (error) {
+          await commandObject.checkPerms(
+            this.client,
+            message,
+            this.client.ignorePermissions
+          );
+        } catch (error) {
           await message.reply(`Error: ${(error as Error).message}`);
         }
       }
@@ -96,8 +111,9 @@ export default class CommandHandler {
         name: command.name,
         description: command.description,
         type: "CHAT_INPUT",
-        options: command.slashData === undefined ? command.args : command.slashData
-      }
+        options:
+          command.slashData === undefined ? command.args : command.slashData,
+      };
 
       allSlashData.push(commandData);
 
@@ -115,7 +131,7 @@ export default class CommandHandler {
       // if (permissions !== undefined) {
       //   specialPermissions.push({ name: command.name, permissions });
       // }
-    };
+    }
 
     const createdSlashCommands = await guild.commands.set(allSlashData);
     // for (const specialPermission of specialPermissions) {
@@ -130,7 +146,7 @@ export default class CommandHandler {
   }
 
   createInteractionHandler() {
-    this.client.on("interactionCreate", async interaction => {
+    this.client.on("interactionCreate", async (interaction) => {
       if (interaction instanceof CommandInteraction) {
         const commandObject = this.commands.get(interaction.commandName);
 

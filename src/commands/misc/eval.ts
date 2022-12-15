@@ -13,17 +13,22 @@ export default class EvalCommand extends Command {
       hidden: true,
       ownerOnly: true,
       slashCommand: true,
-      args: [{
-        name: "code",
-        description: "Code to evaluate",
-        type: "STRING",
-        match: "content",
-        required: true
-      }]
+      args: [
+        {
+          name: "code",
+          description: "Code to evaluate",
+          type: "STRING",
+          match: "content",
+          required: true,
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentContentReturnValue) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentContentReturnValue
+  ) {
     let evaledCode = "Error";
 
     try {
@@ -35,7 +40,7 @@ export default class EvalCommand extends Command {
     const embed = new MessageEmbed({
       title: "Evalute Code",
       description: `\`\`\`js\n>${args.code}\n${evaledCode}\`\`\``,
-      color: "BLUE"
+      color: "BLUE",
     });
 
     await message.reply({ embeds: [embed] });

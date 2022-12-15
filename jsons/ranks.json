@@ -29,9 +29,5 @@
     "Ultra Sweat XX",
     "MAXIMUM SWEAT"
   ],
-  "casranks": [
-    "Cas",
-    "Ultra Cas",
-    "Super Ultra Cas"
-  ]
+  "casranks": ["Cas", "Ultra Cas", "Super Ultra Cas"]
 }

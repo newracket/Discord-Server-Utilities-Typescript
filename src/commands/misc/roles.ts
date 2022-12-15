@@ -12,33 +12,42 @@ export default class RolesCommand extends Command {
       category: "Moderation",
       channel: "guild",
       slashCommand: true,
-      args: [{
-        name: "member",
-        type: "USER",
-        description: "Member to display roles of. If omitted, will display all roles. ",
-        match: "content"
-      }]
+      args: [
+        {
+          name: "member",
+          type: "USER",
+          description:
+            "Member to display roles of. If omitted, will display all roles. ",
+          match: "content",
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentUserReturnValue) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentUserReturnValue
+  ) {
     let roles;
 
     if (!args.member) {
-      roles = (await (message.guild as Guild).roles.fetch()).filter(role => role.position != 0);
-    }
-    else {
-      roles = args.member.roles.cache.filter(role => role.position != 0);
+      roles = (await (message.guild as Guild).roles.fetch()).filter(
+        (role) => role.position != 0
+      );
+    } else {
+      roles = args.member.roles.cache.filter((role) => role.position != 0);
     }
     roles.sort((a, b) => b.comparePositionTo(a));
 
     const embeds = [];
     let currentEmbed = new MessageEmbed({
-      title: `**__Roles list for ${args.member ? args.member.displayName : "this server"}:__**`
+      title: `**__Roles list for ${
+        args.member ? args.member.displayName : "this server"
+      }:__**`,
     });
     let currentDescription = "";
 
-    roles.forEach(role => {
+    roles.forEach((role) => {
       const roleItem = `${role.position}: ${role}\n`;
 
       if ((currentDescription + roleItem).length > 2048) {
@@ -53,7 +62,7 @@ export default class RolesCommand extends Command {
 
     currentEmbed.setDescription(currentDescription);
     embeds.push(currentEmbed);
-    
+
     await message.reply({ embeds });
   }
 }

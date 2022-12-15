@@ -12,53 +12,87 @@ export default class HelpCommand extends Command {
       aliases: ["h"],
       category: "Misc",
       slashCommand: true,
-      args: [{
-        name: "command",
-        description: "Command name or category name to get help for",
-        type: "STRING",
-        match: "content",
-        required: false
-      }]
+      args: [
+        {
+          name: "command",
+          description: "Command name or category name to get help for",
+          type: "STRING",
+          match: "content",
+          required: false,
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentContentReturnValue, client: CustomClient) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentContentReturnValue,
+    client: CustomClient
+  ) {
     let embedOutput: MessageEmbed;
 
     if (args.command) {
-      let commandsObject = client.commandHandler.categories.find(categoryCommands => (categoryCommands.first() as Command).category.toLowerCase() === args.command.toLowerCase());
+      let commandsObject = client.commandHandler.categories.find(
+        (categoryCommands) =>
+          (categoryCommands.first() as Command).category.toLowerCase() ===
+          args.command.toLowerCase()
+      );
 
       if (commandsObject === undefined) {
-        commandsObject = client.commandHandler.commands.filter(command => command.name.toLowerCase() == args.command.toLowerCase() || command.aliases.map(e => e.toLowerCase()).includes(args.command.toLowerCase()));
+        commandsObject = client.commandHandler.commands.filter(
+          (command) =>
+            command.name.toLowerCase() == args.command.toLowerCase() ||
+            command.aliases
+              .map((e) => e.toLowerCase())
+              .includes(args.command.toLowerCase())
+        );
       }
 
-      if (commandsObject.size === 0) return message.reply("There is no command or category with that name");
+      if (commandsObject.size === 0)
+        return message.reply("There is no command or category with that name");
 
       embedOutput = new MessageEmbed({
-        color: '#0099ff',
-        title: `Server Helper Bot ${(commandsObject.first() as Command).category} Commands`,
-        footer: { text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details` }
+        color: "#0099ff",
+        title: `Server Helper Bot ${
+          (commandsObject.first() as Command).category
+        } Commands`,
+        footer: {
+          text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details`,
+        },
       });
 
-      commandsObject.forEach(command => {
-        embedOutput.addField(`${command.name}`, `
+      commandsObject.forEach((command) => {
+        embedOutput.addField(
+          `${command.name}`,
+          `
           Description: \`${command.description}\`
-          Usage: \`${command.usage.replace(new RegExp(command.name, "g"), client.commandHandler.prefix + command.name)}\`
-          Aliases: \`${command.aliases.join(", ")}\``);
+          Usage: \`${command.usage.replace(
+            new RegExp(command.name, "g"),
+            client.commandHandler.prefix + command.name
+          )}\`
+          Aliases: \`${command.aliases.join(", ")}\``
+        );
       });
-    }
-    else {
+    } else {
       embedOutput = new MessageEmbed({
-        color: '#0099ff',
+        color: "#0099ff",
         title: "Server Helper Bot Commands",
-        footer: { text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details` }
+        footer: {
+          text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details`,
+        },
       });
 
-      for (const [categoryName, categoryCommands] of client.commandHandler.categories.entries()) {
+      for (const [
+        categoryName,
+        categoryCommands,
+      ] of client.commandHandler.categories.entries()) {
         if (categoryCommands === undefined) return;
 
-        embedOutput.addField(`${categoryName}`, categoryCommands.map(command => `\`${command.name}\``).join(" "));
-      };
+        embedOutput.addField(
+          `${categoryName}`,
+          categoryCommands.map((command) => `\`${command.name}\``).join(" ")
+        );
+      }
     }
 
     message.reply({ embeds: [embedOutput] });

@@ -1,5 +1,19 @@
-import { AudioPlayerStatus, createAudioPlayer, createAudioResource, DiscordGatewayAdapterCreator, entersState, joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
-import { CommandInteraction, GuildMember, Message, StageChannel, VoiceChannel } from "discord.js";
+import {
+  AudioPlayerStatus,
+  createAudioPlayer,
+  createAudioResource,
+  DiscordGatewayAdapterCreator,
+  entersState,
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+} from "@discordjs/voice";
+import {
+  CommandInteraction,
+  GuildMember,
+  Message,
+  StageChannel,
+  VoiceChannel,
+} from "discord.js";
 // @ts-ignore
 import gTTS from "gtts";
 import Command from "../../framework/Command";
@@ -20,26 +34,29 @@ export default class TtsCommand extends Command {
       usage: "tts <message>",
       category: "Misc",
       slashCommand: true,
-      args: [{
-        name: "content",
-        type: "STRING",
-        match: "content",
-        description: "Text to conver to speech",
-        required: true
-      }]
+      args: [
+        {
+          name: "content",
+          type: "STRING",
+          match: "content",
+          description: "Text to conver to speech",
+          required: true,
+        },
+      ],
     });
   }
 
-  async execute(message: Message | CommandInteraction, args: ArgumentContentReturnValue) {
+  async execute(
+    message: Message | CommandInteraction,
+    args: ArgumentContentReturnValue
+  ) {
     const nicks = nicksJSON.get();
 
     if (args.content.length < 0) {
       await message.reply("No message to say.");
-    }
-    else if (args.content.length > 400) {
+    } else if (args.content.length > 400) {
       await message.reply("Message exceeds character limit of 400.");
-    }
-    else {
+    } else {
       const that = this;
 
       if (!this.playing) {
@@ -64,18 +81,31 @@ export default class TtsCommand extends Command {
 
           voiceChannel = (message.member as GuildMember).voice.channel;
           if (!voiceChannel) {
-            voiceChannel = await Utils.resolveChannel("633161578363224070", message) as VoiceChannel | StageChannel | null;
+            voiceChannel = (await Utils.resolveChannel(
+              "633161578363224070",
+              message
+            )) as VoiceChannel | StageChannel | null;
           }
 
-          if (voiceChannel === null) return await message.reply("Voice channel is null");
+          if (voiceChannel === null)
+            return await message.reply("Voice channel is null");
 
-          const nickname = nicks[authorId] != undefined ? nicks[authorId] : (message.member as GuildMember).displayName;
-          const speech = nickname + " says " + args.content.split(" ").map(e => {
-            if (e[0] == "<" && e[1] == ":" && e[e.length - 1] == ">") {
-              return e.split(":")[1];
-            }
-            return e;
-          }).join(" ");
+          const nickname =
+            nicks[authorId] != undefined
+              ? nicks[authorId]
+              : (message.member as GuildMember).displayName;
+          const speech =
+            nickname +
+            " says " +
+            args.content
+              .split(" ")
+              .map((e) => {
+                if (e[0] == "<" && e[1] == ":" && e[e.length - 1] == ">") {
+                  return e.split(":")[1];
+                }
+                return e;
+              })
+              .join(" ");
           const gtts = new gTTS(speech, "en");
 
           const player = createAudioPlayer();
@@ -83,11 +113,15 @@ export default class TtsCommand extends Command {
 
           player.play(resource);
 
-          const connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator });
+          const connection = joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: voiceChannel.guild.id,
+            adapterCreator: voiceChannel.guild
+              .voiceAdapterCreator as DiscordGatewayAdapterCreator,
+          });
           try {
             await entersState(connection, VoiceConnectionStatus.Ready, 30e3);
-          }
-          catch (error) {
+          } catch (error) {
             await message.reply((error as Error).message);
           }
 
@@ -96,7 +130,7 @@ export default class TtsCommand extends Command {
           let started = false;
           player.on(AudioPlayerStatus.Playing, () => {
             started = true;
-          })
+          });
 
           player.on(AudioPlayerStatus.Idle, () => {
             if (!started) return;
@@ -106,11 +140,14 @@ export default class TtsCommand extends Command {
             clearTimeout(playingTimeout as ReturnType<typeof setTimeout>);
 
             if (message instanceof CommandInteraction) {
-              message.editReply(`Said the message "${args.content}" in ${(voiceChannel as VoiceChannel).name}.`);
+              message.editReply(
+                `Said the message "${args.content}" in ${
+                  (voiceChannel as VoiceChannel).name
+                }.`
+              );
             }
           });
-        }
-        catch (error) {
+        } catch (error) {
           await message.reply("Error: " + (error as Error).message);
 
           that.playing = false;
@@ -119,8 +156,7 @@ export default class TtsCommand extends Command {
             clearTimeout(playingTimeout);
           }
         }
-      }
-      else {
+      } else {
         await message.reply("Someone else is already using this.");
       }
     }

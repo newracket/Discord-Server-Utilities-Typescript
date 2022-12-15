@@ -1,4 +1,11 @@
-import { ApplicationCommandOptionData, ClientOptions, GuildChannel, GuildMember, Role, ThreadChannel } from "discord.js";
+import {
+  ApplicationCommandOptionData,
+  ClientOptions,
+  GuildChannel,
+  GuildMember,
+  Role,
+  ThreadChannel,
+} from "discord.js";
 
 export interface CustomClientOptions extends ClientOptions {
   ownerID: string;
@@ -6,24 +13,39 @@ export interface CustomClientOptions extends ClientOptions {
 }
 
 export type ArgumentOptions = ApplicationCommandOptionData & {
-  match: "content" | "role" | "last" | "notLast" | "member" | "members" | "word" | "channel",
-  required?: boolean
-}
+  match:
+    | "content"
+    | "role"
+    | "last"
+    | "notLast"
+    | "member"
+    | "members"
+    | "word"
+    | "channel";
+  required?: boolean;
+};
 
 export interface ArgumentReturnValue {
-  [key: string]: string | Role | GuildMember | GuildMember[] | GuildChannel | ThreadChannel | number
+  [key: string]:
+    | string
+    | Role
+    | GuildMember
+    | GuildMember[]
+    | GuildChannel
+    | ThreadChannel
+    | number;
 }
 
 export interface ArgumentContentReturnValue extends ArgumentReturnValue {
-  [key: string]: string
+  [key: string]: string;
 }
 
 export interface ArgumentRoleReturnValue extends ArgumentReturnValue {
-  [key: string]: Role
+  [key: string]: Role;
 }
 
 export interface ArgumentUserReturnValue extends ArgumentReturnValue {
-  [key: string]: GuildMember
+  [key: string]: GuildMember;
 }
 
 export interface ArgumentChannelReturnValue extends ArgumentReturnValue {
