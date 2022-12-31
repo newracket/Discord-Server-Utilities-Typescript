@@ -8,6 +8,7 @@ import {
   GuildChannel,
   GuildMember,
   Message,
+  NonThreadGuildBasedChannel,
   Role,
   Snowflake,
   TextChannel,
@@ -23,11 +24,10 @@ export default class Utils {
     messageOrChannels:
       | Message
       | CommandInteraction
-      | Collection<Snowflake, GuildChannel | ThreadChannel>,
+      | Collection<Snowflake, GuildChannel | ThreadChannel | NonThreadGuildBasedChannel>,
     caseSensitive = false
   ) {
-    if (messageOrChannels == undefined)
-      throw "Error when resolving: Message not defined";
+    if (messageOrChannels == undefined) throw "Error when resolving: Message not defined";
     if (
       !(messageOrChannels instanceof Message) &&
       !(messageOrChannels instanceof Collection) &&
@@ -40,27 +40,20 @@ export default class Utils {
       text = idMatch[0].replace(/[<#>]/g, "");
     }
 
-    if (
-      messageOrChannels instanceof Message ||
-      messageOrChannels instanceof CommandInteraction
-    ) {
+    if (messageOrChannels instanceof Message || messageOrChannels instanceof CommandInteraction) {
       messageOrChannels = (messageOrChannels.guild as Guild).channels.cache;
     }
 
     if (caseSensitive) {
       return (
         messageOrChannels.get(text) ||
-        messageOrChannels.find((channel) =>
-          [channel.name, channel.id].includes(text.trim())
-        )
+        messageOrChannels.find((channel) => [channel.name, channel.id].includes(text.trim()))
       );
     } else {
       return (
         messageOrChannels.get(text) ||
         messageOrChannels.find((channel) =>
-          [channel.name.toLowerCase(), channel.id].includes(
-            text.trim().toLowerCase()
-          )
+          [channel.name.toLowerCase(), channel.id].includes(text.trim().toLowerCase())
         )
       );
     }
@@ -68,20 +61,13 @@ export default class Utils {
 
   static async resolveChannels(
     text: string,
-    messageOrChannels:
-      | Message
-      | CommandInteraction
-      | Collection<Snowflake, GuildChannel | ThreadChannel>,
+    messageOrChannels: Message | CommandInteraction | Collection<Snowflake, GuildChannel | ThreadChannel>,
     caseSensitive = false
   ) {
     const channels = [];
 
     for (const word of text.split(" ")) {
-      const channel = await this.resolveChannel(
-        word,
-        messageOrChannels,
-        caseSensitive
-      );
+      const channel = await this.resolveChannel(word, messageOrChannels, caseSensitive);
 
       if (channel) {
         channels.push(channel);
@@ -96,8 +82,7 @@ export default class Utils {
     messageOrRoles: Message | CommandInteraction | Collection<Snowflake, Role>,
     caseSensitive = false
   ) {
-    if (messageOrRoles == undefined)
-      throw "Error when resolving: Message not defined";
+    if (messageOrRoles == undefined) throw "Error when resolving: Message not defined";
     if (
       !(messageOrRoles instanceof Message) &&
       !(messageOrRoles instanceof Collection) &&
@@ -110,40 +95,26 @@ export default class Utils {
       text = idMatch[0].replace(/[<@&>]/g, "");
     }
 
-    if (
-      messageOrRoles instanceof Message ||
-      messageOrRoles instanceof CommandInteraction
-    ) {
+    if (messageOrRoles instanceof Message || messageOrRoles instanceof CommandInteraction) {
       messageOrRoles = await (messageOrRoles.guild as Guild).roles.fetch();
     }
 
     if (caseSensitive) {
-      return (
-        messageOrRoles.get(text) ||
-        messageOrRoles.find((role) =>
-          [role.name, role.id].includes(text.trim())
-        )
-      );
+      return messageOrRoles.get(text) || messageOrRoles.find((role) => [role.name, role.id].includes(text.trim()));
     } else {
       return (
         messageOrRoles.get(text) ||
-        messageOrRoles.find((role) =>
-          [role.name.toLowerCase(), role.id].includes(text.trim().toLowerCase())
-        )
+        messageOrRoles.find((role) => [role.name.toLowerCase(), role.id].includes(text.trim().toLowerCase()))
       );
     }
   }
 
   static async resolveMember(
     text: string,
-    messageOrMembers:
-      | Message
-      | CommandInteraction
-      | Collection<Snowflake, GuildMember>,
+    messageOrMembers: Message | CommandInteraction | Collection<Snowflake, GuildMember>,
     caseSensitive = false
   ) {
-    if (messageOrMembers == undefined)
-      throw "Error when resolving: Message not defined";
+    if (messageOrMembers == undefined) throw "Error when resolving: Message not defined";
     if (
       !(messageOrMembers instanceof Message) &&
       !(messageOrMembers instanceof Collection) &&
@@ -156,22 +127,15 @@ export default class Utils {
       text = idMatch[0].replace(/[<@>]/g, "");
     }
 
-    if (
-      messageOrMembers instanceof Message ||
-      messageOrMembers instanceof CommandInteraction
-    ) {
-      messageOrMembers = await (
-        messageOrMembers.guild as Guild
-      ).members.fetch();
+    if (messageOrMembers instanceof Message || messageOrMembers instanceof CommandInteraction) {
+      messageOrMembers = await (messageOrMembers.guild as Guild).members.fetch();
     }
 
     if (caseSensitive) {
       return (
         messageOrMembers.get(text) ||
         messageOrMembers.find((member) =>
-          [member.displayName, member.id, member.user.username].includes(
-            text.trim()
-          )
+          [member.displayName, member.id, member.user.username].includes(text.trim())
         ) ||
         messageOrMembers.get(nicks.getKeyFromValue(text.trim()))
       );
@@ -179,11 +143,9 @@ export default class Utils {
       return (
         messageOrMembers.get(text) ||
         messageOrMembers.find((member) =>
-          [
-            member.displayName.toLowerCase(),
-            member.id,
-            member.user.username.toLowerCase(),
-          ].includes(text.trim().toLowerCase())
+          [member.displayName.toLowerCase(), member.id, member.user.username.toLowerCase()].includes(
+            text.trim().toLowerCase()
+          )
         ) ||
         messageOrMembers.get(nicks.getKeyFromValue(text.toLowerCase().trim()))
       );
@@ -192,20 +154,13 @@ export default class Utils {
 
   static async resolveMembers(
     text: string,
-    messageOrMembers:
-      | Message
-      | CommandInteraction
-      | Collection<Snowflake, GuildMember>,
+    messageOrMembers: Message | CommandInteraction | Collection<Snowflake, GuildMember>,
     caseSensitive = false
   ) {
     const members = [];
 
     for (const word of text.split(" ")) {
-      const member = await this.resolveMember(
-        word,
-        messageOrMembers,
-        caseSensitive
-      );
+      const member = await this.resolveMember(word, messageOrMembers, caseSensitive);
 
       if (member) {
         members.push(member);
@@ -218,20 +173,12 @@ export default class Utils {
   static async resolveMessage(
     channel: TextChannel | Snowflake,
     messageId: Snowflake,
-    messageOrChannels?:
-      | Message
-      | CommandInteraction
-      | Collection<Snowflake, TextChannel>
+    messageOrChannels?: Message | CommandInteraction | Collection<Snowflake, TextChannel>
   ) {
     if (!(channel instanceof TextChannel)) {
       if (messageOrChannels === undefined)
-        throw new TypeError(
-          "Error with code: messageOrChannels not specified in Utils.resolveMessage"
-        );
-      channel = (await this.resolveChannel(
-        channel,
-        messageOrChannels
-      )) as TextChannel;
+        throw new TypeError("Error with code: messageOrChannels not specified in Utils.resolveMessage");
+      channel = (await this.resolveChannel(channel, messageOrChannels)) as TextChannel;
     }
 
     const message = await channel.messages.fetch(messageId);
@@ -273,9 +220,7 @@ export default class Utils {
         "random",
       ];
 
-      let color = colorsList
-        .find((c) => c.toLowerCase() === inputColor)
-        ?.toUpperCase();
+      let color = colorsList.find((c) => c.toLowerCase() === inputColor)?.toUpperCase();
       if (!color) {
         color = Color(inputColor).rgb().array();
       }
