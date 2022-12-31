@@ -6,6 +6,7 @@ import {
   GuildChannel,
   GuildMember,
   Message,
+  NonThreadGuildBasedChannel,
   Role,
   Snowflake,
   ThreadChannel,
@@ -84,9 +85,7 @@ export default class Command {
 
     if (
       this.allowedRoles !== undefined &&
-      message.member?.roles.cache.find((role) =>
-        (this.allowedRoles as string[]).includes(role.id)
-      ) === undefined &&
+      message.member?.roles.cache.find((role) => (this.allowedRoles as string[]).includes(role.id)) === undefined &&
       !ignorePermissions.includes(authorId)
     ) {
       return await message.reply(
@@ -97,8 +96,7 @@ export default class Command {
     }
 
     if (message instanceof CommandInteraction) {
-      if (givenArgs === undefined)
-        return message.reply("Required arguments not fulfilled.");
+      if (givenArgs === undefined) return message.reply("Required arguments not fulfilled.");
       return this.execute(message, givenArgs);
     }
 
@@ -111,8 +109,7 @@ export default class Command {
     for (const arg of this.args) {
       switch (arg.match) {
         case "content": {
-          if (messageWords.length === 0 && arg.required)
-            return await message.reply("Incorrect format.");
+          if (messageWords.length === 0 && arg.required) return await message.reply("Incorrect format.");
 
           commandArgs[arg.name] = messageWords.join(" ");
           messageWords.splice(0, messageWords.length);
@@ -120,13 +117,9 @@ export default class Command {
         }
         case "role": {
           const roles = await message.guild?.roles.fetch();
-          if (roles === undefined)
-            return await message.reply("Error: Guild contains no roles.");
+          if (roles === undefined) return await message.reply("Error: Guild contains no roles.");
 
-          let matchedRole = await Utils.resolveRole(
-            messageWords.join(" "),
-            roles
-          );
+          let matchedRole = await Utils.resolveRole(messageWords.join(" "), roles);
           if (!matchedRole) {
             matchedRole = await this.findRole(roles, messageWords);
           } else {
@@ -139,13 +132,9 @@ export default class Command {
         }
         case "member": {
           const members = await message.guild?.members.fetch();
-          if (members === undefined)
-            return await message.reply("Error: Guild contains no members.");
+          if (members === undefined) return await message.reply("Error: Guild contains no members.");
 
-          let matchedMember = await Utils.resolveMember(
-            messageWords.join(" "),
-            members
-          );
+          let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
           if (!matchedMember) {
             matchedMember = await this.findMember(members, messageWords);
           } else {
@@ -158,8 +147,7 @@ export default class Command {
         }
         case "members": {
           const members = await message.guild?.members.fetch();
-          if (members === undefined)
-            return await message.reply("Error: Guild contains no members.");
+          if (members === undefined) return await message.reply("Error: Guild contains no members.");
 
           const matchedMembers = [];
           let oldLength = -1;
@@ -167,10 +155,7 @@ export default class Command {
           while (messageWords.length !== oldLength) {
             oldLength = messageWords.length;
 
-            let matchedMember = await Utils.resolveMember(
-              messageWords.join(" "),
-              members
-            );
+            let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
             if (!matchedMember) {
               matchedMember = await this.findMember(members, messageWords);
             } else {
@@ -182,20 +167,15 @@ export default class Command {
             }
           }
 
-          if (matchedMembers.length === 0)
-            return await message.reply("Member not found");
+          if (matchedMembers.length === 0) return await message.reply("Member not found");
           commandArgs[arg.name] = matchedMembers;
           break;
         }
         case "channel": {
           const channels = await message.guild?.channels.fetch();
-          if (channels === undefined)
-            return await message.reply("Error: Guild contains no channels.");
+          if (channels === undefined) return await message.reply("Error: Guild contains no channels.");
 
-          let matchedChannel = await Utils.resolveChannel(
-            messageWords.join(" "),
-            channels
-          );
+          let matchedChannel = await Utils.resolveChannel(messageWords.join(" "), channels);
           if (!matchedChannel) {
             matchedChannel = await this.findChannel(channels, messageWords);
           } else {
@@ -211,9 +191,7 @@ export default class Command {
           break;
         }
         case "notLast": {
-          commandArgs[arg.name] = messageWords
-            .splice(0, messageWords.length - 1)
-            .join(" ");
+          commandArgs[arg.name] = messageWords.splice(0, messageWords.length - 1).join(" ");
           break;
         }
         case "word": {
@@ -231,10 +209,7 @@ export default class Command {
     client?: CustomClient
   ): Promise<any> {}
 
-  async handleInteraction(
-    interaction: CommandInteraction,
-    client: CustomClient
-  ) {
+  async handleInteraction(interaction: CommandInteraction, client: CustomClient) {
     let commandArgs: ArgumentReturnValue = {};
 
     interaction.options.data.forEach((arg) => {
@@ -254,12 +229,7 @@ export default class Command {
     });
 
     // this.execute(interaction, commandArgs);
-    await this.checkPerms(
-      client,
-      interaction,
-      client.ignorePermissions,
-      commandArgs
-    );
+    await this.checkPerms(client, interaction, client.ignorePermissions, commandArgs);
   }
 
   getInteractionOptionValue(options: CommandInteractionOption) {
@@ -285,10 +255,7 @@ export default class Command {
     }
   }
 
-  async findRole(
-    roles: Collection<Snowflake, Role>,
-    words: string[]
-  ): Promise<Role | undefined> {
+  async findRole(roles: Collection<Snowflake, Role>, words: string[]): Promise<Role | undefined> {
     let currentRole = "";
 
     for (const [i, word] of words.entries()) {
@@ -302,10 +269,7 @@ export default class Command {
     }
   }
 
-  async findMember(
-    members: Collection<Snowflake, GuildMember>,
-    words: string[]
-  ): Promise<GuildMember | undefined> {
+  async findMember(members: Collection<Snowflake, GuildMember>, words: string[]): Promise<GuildMember | undefined> {
     let currentMember = "";
 
     for (const [i, word] of words.entries()) {
@@ -322,17 +286,14 @@ export default class Command {
   }
 
   async findChannel(
-    channels: Collection<Snowflake, GuildChannel>,
+    channels: Collection<Snowflake, GuildChannel | NonThreadGuildBasedChannel>,
     words: string[]
   ): Promise<GuildChannel | ThreadChannel | undefined> {
     let currentChannel = "";
 
     for (const [i, word] of words.entries()) {
       currentChannel += word + " ";
-      const matchedChannel = await Utils.resolveChannel(
-        currentChannel,
-        channels
-      );
+      const matchedChannel = await Utils.resolveChannel(currentChannel, channels);
 
       if (matchedChannel !== undefined) {
         words.splice(0, i + 1);
