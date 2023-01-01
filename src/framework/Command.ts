@@ -172,9 +172,10 @@ export default class Command {
           break;
         }
         case "channel": {
-          const channels = await message.guild?.channels.fetch();
-          if (channels === undefined) return await message.reply("Error: Guild contains no channels.");
+          const receivedChannels = await message.guild?.channels.fetch();
+          if (receivedChannels === undefined) return await message.reply("Error: Guild contains no channels.");
 
+          const channels = receivedChannels.filter((channel) => channel !== null || channel !== undefined);
           let matchedChannel = await Utils.resolveChannel(messageWords.join(" "), channels);
           if (!matchedChannel) {
             matchedChannel = await this.findChannel(channels, messageWords);
@@ -275,8 +276,6 @@ export default class Command {
     for (const [i, word] of words.entries()) {
       currentMember += word + " ";
       const matchedMember = await Utils.resolveMember(currentMember, members);
-      console.log(currentMember);
-      console.log(matchedMember);
 
       if (matchedMember !== undefined) {
         words.splice(0, i + 1);
