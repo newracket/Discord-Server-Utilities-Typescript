@@ -172,10 +172,9 @@ export default class Command {
           break;
         }
         case "channel": {
-          const receivedChannels = await message.guild?.channels.fetch();
-          if (receivedChannels === undefined) return await message.reply("Error: Guild contains no channels.");
+          const channels = await message.guild?.channels.fetch() as Collection<Snowflake, GuildChannel> | undefined;
+          if (channels === undefined) return await message.reply("Error: Guild contains no channels.");
 
-          const channels = receivedChannels.filter((channel) => channel !== null || channel !== undefined);
           let matchedChannel = await Utils.resolveChannel(messageWords.join(" "), channels);
           if (!matchedChannel) {
             matchedChannel = await this.findChannel(channels, messageWords);
