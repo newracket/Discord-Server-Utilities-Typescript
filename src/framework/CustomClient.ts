@@ -26,6 +26,8 @@ export default class CustomClient extends Client {
     this.once("ready", () => {
       console.log("Ready!");
 
+      this.user?.setActivity("aniket is the goat");
+      
       // this.commandHandler.createSlashCommands();
       this.commandHandler.createInteractionHandler();
 

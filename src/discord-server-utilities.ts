@@ -1,5 +1,6 @@
 import CustomClient from "./framework/CustomClient";
 import { token } from "./../config.json";
+// import { testToken as token } from "./../config.json";
 
 const client = new CustomClient(token, {
   ownerID: "301200493307494400",
