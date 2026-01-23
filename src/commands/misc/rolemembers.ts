@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentRoleReturnValue } from "../../framework/Typings";
 
@@ -15,7 +15,7 @@ export default class RoleMembersCommand extends Command {
       args: [
         {
           name: "role",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           description: "Role to list members for",
           required: true,
           match: "role",
@@ -25,17 +25,16 @@ export default class RoleMembersCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentRoleReturnValue
   ) {
     const roleMembers = [...args.role.members.values()];
     if (roleMembers.length == 0) return message.reply("No one has that role");
 
-    const embed = new MessageEmbed({
-      color: args.role.hexColor,
-      title: `Members with ${args.role.name} role`,
-      description: roleMembers.join(" "),
-    });
+    const embed = new EmbedBuilder()
+      .setColor(args.role.hexColor)
+      .setTitle(`Members with ${args.role.name} role`)
+      .setDescription(roleMembers.join(" "));
 
     await message.reply({ embeds: [embed] });
   }

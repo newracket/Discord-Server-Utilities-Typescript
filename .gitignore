@@ -3,7 +3,7 @@ package-lock.json
 
 dist/
 
-config.json
+.env
 
 muted.json
 nicks.json

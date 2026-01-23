@@ -1,11 +1,11 @@
 import {
   ApplicationCommandData,
+  ApplicationCommandType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
 } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { prefix } from "../../config.json";
 import Command from "./Command";
 import CustomClient from "./CustomClient";
 
@@ -18,7 +18,7 @@ export default class CommandHandler {
   constructor(client: CustomClient) {
     this.commands = new Collection();
     this.categories = new Collection();
-    this.prefix = prefix;
+    this.prefix = client.environment.prefix;
 
     this.client = client;
   }
@@ -28,7 +28,7 @@ export default class CommandHandler {
       ".ts|.js",
       ""
     )}`).default;
-    const command: Command = new commandFile();
+    const command: Command = new commandFile(this.client);
 
     if (!this.categories.has(command.category)) {
       this.categories.set(command.category, new Collection());
@@ -70,7 +70,8 @@ export default class CommandHandler {
           ?.execute(message, { content: message.content });
       }
 
-      if (!message.content.startsWith(prefix)) return;
+      if (!message.content.startsWith(this.prefix)) return;
+
 
       const args = message.content.split(" ");
       const command = (args.shift() as string).slice(1);
@@ -110,7 +111,7 @@ export default class CommandHandler {
       const commandData: ApplicationCommandData = {
         name: command.name,
         description: command.description,
-        type: "CHAT_INPUT",
+        type: ApplicationCommandType.ChatInput,
         options:
           command.slashData === undefined ? command.args : command.slashData,
       };
@@ -145,14 +146,20 @@ export default class CommandHandler {
     this.createInteractionHandler();
   }
 
+  async deleteAllSlashCommands() {
+    const guild = await this.client.guilds.fetch("633161578363224066");
+    await guild.commands.set([]);
+  }
+
   createInteractionHandler() {
     this.client.on("interactionCreate", async (interaction) => {
-      if (interaction instanceof CommandInteraction) {
+      if (interaction instanceof ChatInputCommandInteraction) {
+        console.log(interaction.id)
         const commandObject = this.commands.get(interaction.commandName);
 
         if (commandObject !== undefined) {
           try {
-            commandObject.handleInteraction(interaction, this.client);
+            await commandObject.handleInteraction(interaction, this.client);
           } catch (error) {
             await interaction.reply((error as Error).message);
           }

@@ -3,7 +3,7 @@ import Color from "color";
 import {
   Collection,
   ColorResolvable,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   Guild,
   GuildChannel,
   GuildMember,
@@ -23,7 +23,7 @@ export default class Utils {
     text: string,
     messageOrChannels:
       | Message
-      | CommandInteraction
+      | ChatInputCommandInteraction
       | Collection<Snowflake, GuildChannel | ThreadChannel | NonThreadGuildBasedChannel>,
     caseSensitive = false
   ) {
@@ -31,7 +31,7 @@ export default class Utils {
     if (
       !(messageOrChannels instanceof Message) &&
       !(messageOrChannels instanceof Collection) &&
-      !(messageOrChannels instanceof CommandInteraction)
+      !(messageOrChannels instanceof ChatInputCommandInteraction)
     )
       return undefined;
 
@@ -40,7 +40,7 @@ export default class Utils {
       text = idMatch[0].replace(/[<#>]/g, "");
     }
 
-    if (messageOrChannels instanceof Message || messageOrChannels instanceof CommandInteraction) {
+    if (messageOrChannels instanceof Message || messageOrChannels instanceof ChatInputCommandInteraction) {
       messageOrChannels = (messageOrChannels.guild as Guild).channels.cache;
     }
 
@@ -61,7 +61,7 @@ export default class Utils {
 
   static async resolveChannels(
     text: string,
-    messageOrChannels: Message | CommandInteraction | Collection<Snowflake, GuildChannel | ThreadChannel>,
+    messageOrChannels: Message | ChatInputCommandInteraction | Collection<Snowflake, GuildChannel | ThreadChannel>,
     caseSensitive = false
   ) {
     const channels = [];
@@ -79,14 +79,14 @@ export default class Utils {
 
   static async resolveRole(
     text: string,
-    messageOrRoles: Message | CommandInteraction | Collection<Snowflake, Role>,
+    messageOrRoles: Message | ChatInputCommandInteraction | Collection<Snowflake, Role>,
     caseSensitive = false
   ) {
     if (messageOrRoles == undefined) throw "Error when resolving: Message not defined";
     if (
       !(messageOrRoles instanceof Message) &&
       !(messageOrRoles instanceof Collection) &&
-      !(messageOrRoles instanceof CommandInteraction)
+      !(messageOrRoles instanceof ChatInputCommandInteraction)
     )
       return undefined;
 
@@ -95,7 +95,7 @@ export default class Utils {
       text = idMatch[0].replace(/[<@&>]/g, "");
     }
 
-    if (messageOrRoles instanceof Message || messageOrRoles instanceof CommandInteraction) {
+    if (messageOrRoles instanceof Message || messageOrRoles instanceof ChatInputCommandInteraction) {
       messageOrRoles = await (messageOrRoles.guild as Guild).roles.fetch();
     }
 
@@ -111,14 +111,14 @@ export default class Utils {
 
   static async resolveMember(
     text: string,
-    messageOrMembers: Message | CommandInteraction | Collection<Snowflake, GuildMember>,
+    messageOrMembers: Message | ChatInputCommandInteraction | Collection<Snowflake, GuildMember>,
     caseSensitive = false
   ) {
     if (messageOrMembers == undefined) throw "Error when resolving: Message not defined";
     if (
       !(messageOrMembers instanceof Message) &&
       !(messageOrMembers instanceof Collection) &&
-      !(messageOrMembers instanceof CommandInteraction)
+      !(messageOrMembers instanceof ChatInputCommandInteraction)
     )
       return undefined;
 
@@ -127,8 +127,8 @@ export default class Utils {
       text = idMatch[0].replace(/[<@>]/g, "");
     }
 
-    if (messageOrMembers instanceof Message || messageOrMembers instanceof CommandInteraction) {
-      messageOrMembers = await (messageOrMembers.guild as Guild).members.fetch();
+    if (messageOrMembers instanceof Message || messageOrMembers instanceof ChatInputCommandInteraction) {
+      messageOrMembers = (messageOrMembers.guild as Guild).members.cache;
     }
 
     if (caseSensitive) {
@@ -154,7 +154,7 @@ export default class Utils {
 
   static async resolveMembers(
     text: string,
-    messageOrMembers: Message | CommandInteraction | Collection<Snowflake, GuildMember>,
+    messageOrMembers: Message | ChatInputCommandInteraction | Collection<Snowflake, GuildMember>,
     caseSensitive = false
   ) {
     const members = [];
@@ -173,7 +173,7 @@ export default class Utils {
   static async resolveMessage(
     channel: TextChannel | Snowflake,
     messageId: Snowflake,
-    messageOrChannels?: Message | CommandInteraction | Collection<Snowflake, TextChannel>
+    messageOrChannels?: Message | ChatInputCommandInteraction | Collection<Snowflake, TextChannel>
   ) {
     if (!(channel instanceof TextChannel)) {
       if (messageOrChannels === undefined)
@@ -188,41 +188,42 @@ export default class Utils {
   static getHexFromString(inputColor: string): ColorResolvable | null {
     try {
       const colorsList = [
-        "default",
-        "white",
-        "aqua",
-        "green",
-        "blue",
-        "yellow",
-        "purple",
-        "luminous_vivid_pink",
-        "gold",
-        "orange",
-        "red",
-        "grey",
-        "darker_grey",
-        "navy",
-        "dark_aqua",
-        "dark_green",
-        "dark_blue",
-        "dark_purple",
-        "dark_vivid_pink",
-        "dark_gold",
-        "dark_orange",
-        "dark_red",
-        "dark_grey",
-        "light_grey",
-        "dark_navy",
-        "blurple",
-        "greyple",
-        "dark_but_not_black",
-        "not_quite_black",
-        "random",
+        "Default",
+        "White",
+        "Aqua",
+        "Green",
+        "Blue",
+        "Yellow",
+        "Purple",
+        "LuminousVividPink",
+        "Fuchsia",
+        "Gold",
+        "Orange",
+        "Red",
+        "Grey",
+        "Navy",
+        "DarkAqua",
+        "DarkGreen",
+        "DarkBlue",
+        "DarkPurple",
+        "DarkVividPink",
+        "DarkGold",
+        "DarkOrange",
+        "DarkRed",
+        "DarkGrey",
+        "DarkerGrey",
+        "LightGrey",
+        "DarkNavy",
+        "Blurple",
+        "Greyple",
+        "DarkButNotBlack",
+        "NotQuiteBlack",
       ];
 
-      let color = colorsList.find((c) => c.toLowerCase() === inputColor)?.toUpperCase();
+      const normalizedInput = inputColor.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      let color = colorsList.find((c) => c.toLowerCase() === normalizedInput);
       if (!color) {
-        color = Color(inputColor).rgb().array();
+        color = Color(inputColor).hex();
       }
 
       return color as ColorResolvable;
@@ -238,5 +239,49 @@ export default class Utils {
 
   static parseDateTime(input: string): Date {
     return new Date();
+  }
+
+  /**
+   * Splits a message into chunks of a maximum length.
+   * @param text The text to split
+   * @param maxLength The maximum length of each chunk (default: 2000)
+   * @param char The character to split on (default: '\n')
+   * @returns An array of message chunks
+   */
+  static splitMessage(
+    text: string,
+    { maxLength = 2000, char = "\n" } = {}
+  ): string[] {
+    if (text.length <= maxLength) return [text];
+
+    const splitText = text.split(char);
+    const messages: string[] = [];
+    let currentMessage = "";
+
+    for (const chunk of splitText) {
+      if (currentMessage.length + chunk.length + char.length > maxLength) {
+        if (currentMessage.length > 0) {
+          messages.push(currentMessage);
+          currentMessage = "";
+        }
+
+        // If a single chunk is longer than maxLength, split it by characters
+        if (chunk.length > maxLength) {
+          for (let i = 0; i < chunk.length; i += maxLength) {
+            messages.push(chunk.slice(i, i + maxLength));
+          }
+        } else {
+          currentMessage = chunk;
+        }
+      } else {
+        currentMessage += (currentMessage.length > 0 ? char : "") + chunk;
+      }
+    }
+
+    if (currentMessage.length > 0) {
+      messages.push(currentMessage);
+    }
+
+    return messages;
   }
 }

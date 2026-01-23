@@ -1,18 +1,18 @@
 import {
+  ApplicationCommandOptionType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   Role,
   TextChannel,
-  Util,
 } from "discord.js";
-import { strikesChannelId } from "../../../../config.json";
 import nicks from "../../../../jsons/nicks.json";
 import { casranks, sweatranks } from "../../../../jsons/ranks.json";
 import Command from "../../../framework/Command";
 import JSONFileManager from "../../../framework/JsonFileManager";
 import Utils from "../../../framework/Utils";
+import CustomClient from "../../../framework/CustomClient";
 
 const strikesJSON = new JSONFileManager("strikes");
 
@@ -34,14 +34,14 @@ export default class DemoteCommand extends Command {
         {
           name: "member",
           description: "Member to demote",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           match: "members",
           required: true,
         },
         {
           name: "times",
           description: "Times to demote",
-          type: "INTEGER",
+          type: ApplicationCommandOptionType.Integer,
           match: "last",
         },
       ],
@@ -49,8 +49,9 @@ export default class DemoteCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
-    args: { member: GuildMember[] | GuildMember; times: number }
+    message: Message | ChatInputCommandInteraction,
+    args: { member: GuildMember[] | GuildMember; times: number },
+    client: CustomClient,
   ) {
     this.messagesToSend = {};
 
@@ -64,7 +65,7 @@ export default class DemoteCommand extends Command {
 
     if (args.member.length === 0 && message instanceof Message) {
       const messageArgs = message.content.split(" ").slice(1);
-      const members = await message?.guild?.members.fetch();
+      const members = message?.guild?.members.cache;
       if (members === undefined)
         return message.reply("Error when fetching members");
 
@@ -91,17 +92,19 @@ export default class DemoteCommand extends Command {
           message,
           member,
           member.roles.cache.map((role) => role.name),
-          args.times
+          args.times,
+          client,
         );
       });
     }
   }
 
   async demoteMember(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     member: GuildMember,
     roles: any,
-    repeatTimes: number
+    repeatTimes: number,
+    client: CustomClient,
   ): Promise<any> {
     if (message.guild === null) return message.reply("Guild does not exist");
 
@@ -114,12 +117,11 @@ export default class DemoteCommand extends Command {
       );
 
       await member.roles.set([...new Set(roles as Role[])]);
-      Util.splitMessage(
+      Utils.splitMessage(
         this.messagesToSend[member.displayName].join("\n")
       ).forEach((m) => message.reply(m));
-      return `${member.displayName} was successfuly demoted ${
-        this.messagesToSend[member.displayName].length
-      } time${this.messagesToSend[member.displayName].length > 1 ? "s" : ""}`;
+      return `${member.displayName} was successfuly demoted ${this.messagesToSend[member.displayName].length
+        } time${this.messagesToSend[member.displayName].length > 1 ? "s" : ""}`;
     }
 
     if (!this.messagesToSend[member.displayName]) {
@@ -129,13 +131,12 @@ export default class DemoteCommand extends Command {
     const lastRank = sweatranks.filter((rank) => roles.includes(rank)).pop();
     if (lastRank !== undefined && lastRank !== "Member") {
       this.messagesToSend[member.displayName].push(
-        `${member} was demoted to ${
-          sweatranks[sweatranks.indexOf(lastRank) - 1]
+        `${member} was demoted to ${sweatranks[sweatranks.indexOf(lastRank) - 1]
         }.`
       );
 
       roles.splice(roles.indexOf(lastRank), 1);
-      return this.demoteMember(message, member, roles, repeatTimes - 1);
+      return this.demoteMember(message, member, roles, repeatTimes - 1, client);
     } else {
       const lastRank = casranks.filter((rank) => roles.includes(rank)).pop();
       const lastRankIndex = casranks.indexOf(lastRank as string);
@@ -147,12 +148,12 @@ export default class DemoteCommand extends Command {
         this.messagesToSend[member.displayName].push(
           "Error. This person is cannot be demoted any further."
         );
-        return this.demoteMember(message, member, roles, 0);
+        return this.demoteMember(message, member, roles, 0, client);
       }
 
       if (strikesJSON.hasKey(member.id)) {
         const strikesMessage = await Utils.resolveMessage(
-          strikesChannelId,
+          client.environment.strikesChannelId,
           strikesJSON.getValue(member.id).messageId,
           message
         );
@@ -175,14 +176,13 @@ export default class DemoteCommand extends Command {
         }
       } else {
         this.messagesToSend[member.displayName].push(
-          `${member} was demoted to ${
-            casranks[lastRankIndex + 1]
+          `${member} was demoted to ${casranks[lastRankIndex + 1]
           } with 2 strikes.`
         );
         roles.push(casranks[lastRankIndex + 1]);
 
         const strikesChannel = await Utils.resolveChannel(
-          strikesChannelId,
+          client.environment.strikesChannelId,
           message
         );
         if (!(strikesChannel instanceof TextChannel))
@@ -198,6 +198,6 @@ export default class DemoteCommand extends Command {
       }
     }
 
-    return this.demoteMember(message, member, roles, repeatTimes - 1);
+    return this.demoteMember(message, member, roles, repeatTimes - 1, client);
   }
 }

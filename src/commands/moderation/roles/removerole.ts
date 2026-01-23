@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message, Role } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, Message, Role } from "discord.js";
 import Command from "../../../framework/Command";
 
 export default class RemoveRoleCommand extends Command {
@@ -16,14 +16,14 @@ export default class RemoveRoleCommand extends Command {
       args: [
         {
           name: "role",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           required: true,
           description: "Role to remove",
           match: "role",
         },
         {
           name: "member",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           required: true,
           description: "Member to remove role to",
           match: "members",
@@ -33,7 +33,7 @@ export default class RemoveRoleCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember | GuildMember[]; role: Role }
   ) {
     if (!Array.isArray(args.member) && args.member instanceof GuildMember) {
@@ -46,6 +46,11 @@ export default class RemoveRoleCommand extends Command {
         return message.reply(
           "The role you are trying to remove is higher than your highest role."
         );
+
+      const memberId = (message.member as GuildMember).id;
+      if (['442531442912788480', '246673268231241728'].includes(memberId) && m.id === memberId && args.role.id === '881362267818578000') {
+        return await message.reply("You can't remove this role from yourself, that would be capping.");
+      }
 
       await m.roles.remove(args.role);
       await message.reply(`${args.role.name} has been remove from: ${m}.`);

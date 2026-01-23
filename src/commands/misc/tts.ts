@@ -8,7 +8,8 @@ import {
   VoiceConnectionStatus,
 } from "@discordjs/voice";
 import {
-  CommandInteraction,
+  ApplicationCommandOptionType,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   StageChannel,
@@ -37,7 +38,7 @@ export default class TtsCommand extends Command {
       args: [
         {
           name: "content",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           description: "Text to conver to speech",
           required: true,
@@ -47,7 +48,7 @@ export default class TtsCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentContentReturnValue
   ) {
     const nicks = nicksJSON.get();
@@ -65,7 +66,7 @@ export default class TtsCommand extends Command {
         try {
           let authorId = (message as Message)?.author?.id;
 
-          if (message instanceof CommandInteraction) {
+          if (message instanceof ChatInputCommandInteraction) {
             message.deferReply();
             authorId = message.user.id;
           }
@@ -139,7 +140,7 @@ export default class TtsCommand extends Command {
             that.playing = false;
             clearTimeout(playingTimeout as ReturnType<typeof setTimeout>);
 
-            if (message instanceof CommandInteraction) {
+            if (message instanceof ChatInputCommandInteraction) {
               message.editReply(
                 `Said the message "${args.content}" in ${
                   (voiceChannel as VoiceChannel).name

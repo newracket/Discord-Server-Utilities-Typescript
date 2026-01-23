@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, Message } from "discord.js";
 import Command from "../../framework/Command";
 
 export default class ChangeNickCommand extends Command {
@@ -17,14 +17,14 @@ export default class ChangeNickCommand extends Command {
         {
           name: "member",
           description: "Member to promote",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           match: "member",
           required: true,
         },
         {
           name: "nick",
           description: "New nickname",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           required: true,
         },
@@ -33,7 +33,7 @@ export default class ChangeNickCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember; nick: string }
   ) {
     await args.member.setNickname(args.nick === "default" ? null : args.nick);

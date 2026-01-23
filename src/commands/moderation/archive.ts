@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildChannel, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildChannel, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentChannelReturnValue } from "../../framework/Typings";
 
@@ -17,7 +17,7 @@ export default class ArchiveCommand extends Command {
       args: [
         {
           name: "channel",
-          type: "CHANNEL",
+          type: ApplicationCommandOptionType.Channel,
           match: "channel",
           required: true,
           description: "Channel to archive.",
@@ -27,7 +27,7 @@ export default class ArchiveCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentChannelReturnValue
   ) {
     if (args.channel instanceof GuildChannel) {

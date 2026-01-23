@@ -23,3 +23,25 @@ This is a typescript rewrite of my old bot at (https://github.com/newracket/Disc
 - Rolemembers (displays all members with a specific role)
 - Roles (displays all roles in the server)
 - Tts (speaks text in the voice channel the person is in)
+
+# Pushing to Docker Hub
+
+To push to docker hub, you need to first build the image. You can do this by running the following command:
+
+```bash
+docker build -t newracket/discord-server-utilities .
+```
+
+After building the image, you can push it to docker hub by running the following command:
+
+```bash
+docker push newracket/discord-server-utilities
+```
+
+# Deploying bot to AWS server
+
+```bash
+docker pull newracket/discord-server-utilities
+docker run -d newracket/discord-server-utilities
+docker system prune
+```

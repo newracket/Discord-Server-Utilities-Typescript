@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Command from "../../framework/Command";
 import CustomClient from "../../framework/CustomClient";
 import { ArgumentContentReturnValue } from "../../framework/Typings";
@@ -16,7 +16,7 @@ export default class HelpCommand extends Command {
         {
           name: "command",
           description: "Command name or category name to get help for",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           required: false,
         },
@@ -25,11 +25,11 @@ export default class HelpCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentContentReturnValue,
     client: CustomClient
   ) {
-    let embedOutput: MessageEmbed;
+    let embedOutput: EmbedBuilder;
 
     if (args.command) {
       let commandsObject = client.commandHandler.categories.find(
@@ -51,36 +51,33 @@ export default class HelpCommand extends Command {
       if (commandsObject.size === 0)
         return message.reply("There is no command or category with that name");
 
-      embedOutput = new MessageEmbed({
-        color: "#0099ff",
-        title: `Server Helper Bot ${
-          (commandsObject.first() as Command).category
-        } Commands`,
-        footer: {
+      embedOutput = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle(`Server Helper Bot ${(commandsObject.first() as Command).category
+          } Commands`)
+        .setFooter({
           text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details`,
-        },
-      });
+        });
 
       commandsObject.forEach((command) => {
-        embedOutput.addField(
-          `${command.name}`,
-          `
+        embedOutput.addFields({
+          name: `${command.name}`,
+          value: `
           Description: \`${command.description}\`
           Usage: \`${command.usage.replace(
             new RegExp(command.name, "g"),
             client.commandHandler.prefix + command.name
           )}\`
           Aliases: \`${command.aliases.join(", ")}\``
-        );
+        });
       });
     } else {
-      embedOutput = new MessageEmbed({
-        color: "#0099ff",
-        title: "Server Helper Bot Commands",
-        footer: {
+      embedOutput = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle("Server Helper Bot Commands")
+        .setFooter({
           text: `Do ${client.commandHandler.prefix}help <category name> or ${client.commandHandler.prefix}help <command name> to get more details`,
-        },
-      });
+        });
 
       for (const [
         categoryName,
@@ -88,10 +85,10 @@ export default class HelpCommand extends Command {
       ] of client.commandHandler.categories.entries()) {
         if (categoryCommands === undefined) return;
 
-        embedOutput.addField(
-          `${categoryName}`,
-          categoryCommands.map((command) => `\`${command.name}\``).join(" ")
-        );
+        embedOutput.addFields({
+          name: `${categoryName}`,
+          value: categoryCommands.map((command) => `\`${command.name}\``).join(" ")
+        });
       }
     }
 

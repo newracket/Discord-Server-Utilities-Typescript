@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentRoleReturnValue } from "../../framework/Typings";
 
@@ -16,7 +16,7 @@ export default class RoleInfoCommand extends Command {
         {
           name: "role",
           description: "Role to display info for",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           match: "role",
           required: true,
         },
@@ -25,13 +25,13 @@ export default class RoleInfoCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentRoleReturnValue
   ) {
-    const embedOutput = new MessageEmbed({
-      title: `${args.role.name} role info`,
-      color: args.role.color,
-      fields: [
+    const embedOutput = new EmbedBuilder()
+      .setTitle(`${args.role.name} role info`)
+      .setColor(args.role.color)
+      .addFields([
         {
           name: "**ID                                               **",
           value: args.role.id,
@@ -57,8 +57,7 @@ export default class RoleInfoCommand extends Command {
           value: args.role.position.toString(),
           inline: true,
         },
-      ],
-    });
+      ]);
 
     await message.reply({ embeds: [embedOutput] });
   }

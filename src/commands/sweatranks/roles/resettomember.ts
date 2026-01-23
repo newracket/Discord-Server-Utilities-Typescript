@@ -1,6 +1,7 @@
 import {
+  ApplicationCommandOptionType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
 } from "discord.js";
@@ -30,7 +31,7 @@ export default class ResetToMember extends Command {
         {
           name: "member",
           description: "Member to remove sweat/cas roles from",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           match: "members",
           required: true,
         },
@@ -39,7 +40,7 @@ export default class ResetToMember extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember[] | GuildMember; times: number }
   ) {
     this.messagesToSend = {};
@@ -54,7 +55,7 @@ export default class ResetToMember extends Command {
 
     if (args.member.length === 0 && message instanceof Message) {
       const messageArgs = message.content.split(" ").slice(1);
-      const members = await message?.guild?.members.fetch();
+      const members = message?.guild?.members.cache;
       if (members === undefined)
         return message.reply("Error when fetching members");
 
@@ -83,7 +84,7 @@ export default class ResetToMember extends Command {
   }
 
   async resettomember(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     member: GuildMember
   ): Promise<any> {
     if (message.guild === null) return message.reply("Guild does not exist");

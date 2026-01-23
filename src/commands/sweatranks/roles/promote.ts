@@ -1,18 +1,18 @@
 import {
+  ApplicationCommandOptionType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   Role,
   TextChannel,
-  Util,
 } from "discord.js";
-import { strikesChannelId } from "../../../../config.json";
 import nicks from "../../../../jsons/nicks.json";
 import { casranks, sweatranks } from "../../../../jsons/ranks.json";
 import Command from "../../../framework/Command";
 import JSONFileManager from "../../../framework/JsonFileManager";
 import Utils from "../../../framework/Utils";
+import CustomClient from "../../../framework/CustomClient";
 
 const strikesJSON = new JSONFileManager("strikes");
 
@@ -34,14 +34,14 @@ export default class PromoteCommand extends Command {
         {
           name: "member",
           description: "Member to promote",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           match: "members",
           required: true,
         },
         {
           name: "times",
           description: "Times to promote",
-          type: "INTEGER",
+          type: ApplicationCommandOptionType.Integer,
           match: "last",
         },
       ],
@@ -49,8 +49,9 @@ export default class PromoteCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
-    args: { member: GuildMember[] | GuildMember; times: number }
+    message: Message | ChatInputCommandInteraction,
+    args: { member: GuildMember[] | GuildMember; times: number },
+    client: CustomClient,
   ) {
     this.messagesToSend = {};
 
@@ -64,7 +65,7 @@ export default class PromoteCommand extends Command {
 
     if (args.member.length == 0 && message instanceof Message) {
       const messageArgs = message.content.split(" ").slice(1);
-      const members = await message?.guild?.members.fetch();
+      const members = message?.guild?.members.cache;
       if (members === undefined)
         return message.reply("Error when fetching members");
 
@@ -91,17 +92,19 @@ export default class PromoteCommand extends Command {
           message,
           member,
           member.roles.cache.map((role) => role.name),
-          args.times
+          args.times,
+          client,
         );
       });
     }
   }
 
   async promoteMember(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     member: GuildMember,
     roles: any,
-    repeatTimes: number
+    repeatTimes: number,
+    client: CustomClient,
   ): Promise<any> {
     const strikes = strikesJSON.get();
 
@@ -116,12 +119,11 @@ export default class PromoteCommand extends Command {
       );
 
       await member.roles.set([...new Set(roles as Role[])]);
-      Util.splitMessage(
+      Utils.splitMessage(
         this.messagesToSend[member.displayName].join("\n")
       ).forEach((m) => message.reply(m));
-      return `${member.displayName} was successfuly promoted ${
-        this.messagesToSend[member.displayName].length
-      } time${this.messagesToSend[member.displayName].length > 1 ? "s" : ""}`;
+      return `${member.displayName} was successfuly promoted ${this.messagesToSend[member.displayName].length
+        } time${this.messagesToSend[member.displayName].length > 1 ? "s" : ""}`;
     }
 
     if (!this.messagesToSend[member.displayName]) {
@@ -131,7 +133,7 @@ export default class PromoteCommand extends Command {
     if (casranks.filter((rank) => roles.includes(rank)).length > 0) {
       const lastRank = casranks.filter((rank) => roles.includes(rank)).pop();
       const strikesChannel = await Utils.resolveChannel(
-        strikesChannelId,
+        client.environment.strikesChannelId,
         message
       );
 
@@ -148,7 +150,7 @@ export default class PromoteCommand extends Command {
         );
 
         strikesJSON.set(strikes);
-        return this.promoteMember(message, member, roles, repeatTimes - 1);
+        return this.promoteMember(message, member, roles, repeatTimes - 1, client);
       } else if (strikes[member.id].value < 3) {
         const strikesMessage = await Utils.resolveMessage(
           strikesChannel,
@@ -158,8 +160,7 @@ export default class PromoteCommand extends Command {
 
         if (strikes[member.id].value == 3) {
           await strikesMessage.edit(
-            `${member.displayName} - ${
-              strikes[member.id].value
+            `${member.displayName} - ${strikes[member.id].value
             } (Removed ${lastRank} Role)`
           );
           this.messagesToSend[member.displayName].push(
@@ -170,7 +171,7 @@ export default class PromoteCommand extends Command {
           delete strikes[member.id];
           strikesJSON.set(strikes);
 
-          return this.promoteMember(message, member, roles, repeatTimes - 1);
+          return this.promoteMember(message, member, roles, repeatTimes - 1, client);
         } else {
           await strikesMessage.edit(
             `${member.displayName} - ${strikes[member.id].value}`
@@ -180,7 +181,7 @@ export default class PromoteCommand extends Command {
           );
           strikesJSON.set(strikes);
 
-          return this.promoteMember(message, member, roles, repeatTimes - 1);
+          return this.promoteMember(message, member, roles, repeatTimes - 1, client);
         }
       }
     } else {
@@ -193,23 +194,21 @@ export default class PromoteCommand extends Command {
 
         if (member.displayName == "aniket") {
           this.messagesToSend[member.displayName].push(
-            `${member} was promoted to ${
-              sweatranks[sweatranks.indexOf(lastRank) + 1]
+            `${member} was promoted to ${sweatranks[sweatranks.indexOf(lastRank) + 1]
             }. This is a cap promotion.`
           );
         } else {
           this.messagesToSend[member.displayName].push(
-            `${member} was promoted to ${
-              sweatranks[sweatranks.indexOf(lastRank) + 1]
+            `${member} was promoted to ${sweatranks[sweatranks.indexOf(lastRank) + 1]
             }.`
           );
         }
-        return this.promoteMember(message, member, roles, repeatTimes - 1);
+        return this.promoteMember(message, member, roles, repeatTimes - 1, client);
       } else {
         this.messagesToSend[member.displayName].push(
           "Error. This person is already maximum sweat."
         );
-        return this.promoteMember(message, member, roles, 0);
+        return this.promoteMember(message, member, roles, 0, client);
       }
     }
   }

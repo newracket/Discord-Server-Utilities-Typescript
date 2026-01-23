@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, Role } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Message, Role } from "discord.js";
 import Command from "../../../framework/Command";
 import { ArgumentRoleReturnValue } from "../../../framework/Typings";
 
@@ -16,14 +16,14 @@ export default class DisplayAboveCommand extends Command {
       args: [
         {
           name: "roleone",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           match: "role",
           description: "Role to display above other role",
           required: true,
         },
         {
           name: "roletwo",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           match: "role",
           description: "Role that other role will be displayed above.",
           required: true,
@@ -33,14 +33,14 @@ export default class DisplayAboveCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentRoleReturnValue
   ) {
     if (args.roleone.equals(args.roletwo))
       return message.reply("Second role not specified, or roles are the same");
 
     await args.roleone.setHoist(true);
-    if (Role.comparePositions(args.roleone, args.roletwo) < -1) {
+    if (args.roleone.comparePositionTo(args.roletwo) < -1) {
       await args.roleone.setPosition(args.roletwo.position);
     }
 

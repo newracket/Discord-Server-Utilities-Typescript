@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, Message } from "discord.js";
 import Command from "../../framework/Command";
 import JSONFileManager from "../../framework/JsonFileManager";
 import parse from "parse-duration";
@@ -20,14 +20,14 @@ export default class MuteCommand extends Command {
         {
           name: "member",
           match: "member",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           required: true,
           description: "Member to mute",
         },
         {
           name: "time",
           match: "content",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           description: "Time to mute",
         },
       ],
@@ -35,7 +35,7 @@ export default class MuteCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember; time: string }
   ) {
     const mutedID = "806387819432902656";
@@ -63,7 +63,7 @@ export default class MuteCommand extends Command {
     );
 
     if (args.time.length !== 0) {
-      const duration = parse(args.time);
+      const duration = parse(args.time) || 0;
       const time = new Date().getTime() + duration;
 
       mutedJSON.unmuteQue.push({ member: args.member.id, time });

@@ -1,5 +1,6 @@
 import {
-  CommandInteraction,
+  ApplicationCommandOptionType,
+  ChatInputCommandInteraction,
   Message,
   Role,
   TextBasedChannel,
@@ -24,7 +25,7 @@ export default class AddCommand extends Command {
         {
           name: "type",
           description: "Type of reminder",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "word",
           choices: [
             {
@@ -48,21 +49,21 @@ export default class AddCommand extends Command {
         },
         {
           name: "date",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           description: "Date to set reminder",
           required: true,
         },
         {
           name: "reminder",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           description: "Reminder",
           required: true,
         },
         {
           name: "role",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           match: "role",
           description: "Role to ping when reminding",
           required: false,
@@ -109,7 +110,7 @@ export default class AddCommand extends Command {
     }
 
     if (remindObject == null) {
-      message.channel.send("Error when parsing.");
+      message.reply("Error when parsing.");
       return;
     }
 
@@ -120,7 +121,7 @@ export default class AddCommand extends Command {
   };
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { type: string; date: string; reminder: string }
   ) {
     if (message.channel == null) {
@@ -144,7 +145,7 @@ export default class AddCommand extends Command {
          );`,
         (err) => {
           if (err)
-            return (message.channel as TextBasedChannel).send(
+            return message.reply(
               `Error when creating database. ${err}`
             );
         }
@@ -159,9 +160,9 @@ export default class AddCommand extends Command {
          FROM reminders
          ORDER BY id DESC LIMIT 1`,
         [],
-        (err, rows) => {
+        (err, rows: any[]) => {
           if (err && message.channel != null) {
-            message.channel.send(
+            message.reply(
               `Error when selecting reminders from database. ${err}`
             );
             return;
@@ -189,13 +190,13 @@ export default class AddCommand extends Command {
               }
 
               if (err) {
-                message.channel.send(
+                message.reply(
                   `Error when adding reminder to database. ${err}`
                 );
                 return;
               }
 
-              message.channel.send(
+              message.reply(
                 `I will remind you to ${args.reminder} on ${new Date(
                   args.reminder
                 ).toLocaleString("en-US", {

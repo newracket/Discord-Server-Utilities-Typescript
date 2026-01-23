@@ -1,7 +1,8 @@
 import {
   ApplicationCommandOptionData,
+  ApplicationCommandOptionType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   CommandInteractionOption,
   GuildChannel,
   GuildMember,
@@ -63,7 +64,7 @@ export default class Command {
 
   async checkPerms(
     client: CustomClient,
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     ignorePermissions: string[],
     givenArgs?: ArgumentReturnValue
   ) {
@@ -95,9 +96,9 @@ export default class Command {
       );
     }
 
-    if (message instanceof CommandInteraction) {
+    if (message instanceof ChatInputCommandInteraction) {
       if (givenArgs === undefined) return message.reply("Required arguments not fulfilled.");
-      return this.execute(message, givenArgs);
+      return this.execute(message, givenArgs, client);
     }
 
     if (this.parseArgs) return await this.parseArgs(message);
@@ -131,7 +132,7 @@ export default class Command {
           break;
         }
         case "member": {
-          const members = await message.guild?.members.fetch();
+          const members = message.guild?.members.cache;
           if (members === undefined) return await message.reply("Error: Guild contains no members.");
 
           let matchedMember = await Utils.resolveMember(messageWords.join(" "), members);
@@ -146,7 +147,7 @@ export default class Command {
           break;
         }
         case "members": {
-          const members = await message.guild?.members.fetch();
+          const members = message.guild?.members.cache;
           if (members === undefined) return await message.reply("Error: Guild contains no members.");
 
           const matchedMembers = [];
@@ -204,23 +205,23 @@ export default class Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentReturnValue,
     client?: CustomClient
   ): Promise<any> {}
 
-  async handleInteraction(interaction: CommandInteraction, client: CustomClient) {
+  async handleInteraction(interaction: ChatInputCommandInteraction, client: CustomClient) {
     let commandArgs: ArgumentReturnValue = {};
 
     interaction.options.data.forEach((arg) => {
-      if (arg.type === "SUB_COMMAND") {
+      if (arg.type === ApplicationCommandOptionType.Subcommand) {
         commandArgs = this.getInteractionOptionValue(arg);
       } else {
         commandArgs[arg.name] = this.getInteractionOptionValue(arg);
       }
 
       switch (arg.type) {
-        case "SUB_COMMAND":
+        case ApplicationCommandOptionType.Subcommand:
           commandArgs[arg.name] = this.getInteractionOptionValue(arg);
           break;
         default:
@@ -228,22 +229,21 @@ export default class Command {
       }
     });
 
-    // this.execute(interaction, commandArgs);
     await this.checkPerms(client, interaction, client.ignorePermissions, commandArgs);
   }
 
   getInteractionOptionValue(options: CommandInteractionOption) {
     switch (options.type) {
-      case "USER":
+      case ApplicationCommandOptionType.User:
         return options.member as GuildMember;
-      case "ROLE":
+      case ApplicationCommandOptionType.Role:
         return options.role as Role;
-      case "CHANNEL":
+      case ApplicationCommandOptionType.Channel:
         return options.channel as GuildChannel | ThreadChannel;
-      case "SUB_COMMAND": {
+      case ApplicationCommandOptionType.Subcommand: {
         const commandArgs: any = {};
         commandArgs.type = options.name;
-
+        
         options.options?.forEach((o) => {
           commandArgs[o.name] = this.getInteractionOptionValue(o);
         });

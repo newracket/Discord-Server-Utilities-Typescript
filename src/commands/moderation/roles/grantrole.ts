@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message, Role } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, Message, Role } from "discord.js";
 import Command from "../../../framework/Command";
 
 export default class GrantRoleCommand extends Command {
@@ -16,14 +16,14 @@ export default class GrantRoleCommand extends Command {
       args: [
         {
           name: "role",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           required: true,
           description: "Role to grant",
           match: "role",
         },
         {
           name: "member",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           required: true,
           description: "Member to grant role to",
           match: "members",
@@ -33,7 +33,7 @@ export default class GrantRoleCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember | GuildMember[]; role: Role }
   ) {
     if (!Array.isArray(args.member) && args.member instanceof GuildMember) {

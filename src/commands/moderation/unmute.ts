@@ -1,4 +1,4 @@
-import { CommandInteraction, Guild, GuildMember, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Guild, GuildMember, Message } from "discord.js";
 import Command from "../../framework/Command";
 import JSONFileManager from "../../framework/JsonFileManager";
 
@@ -19,7 +19,7 @@ export default class UnmuteCommand extends Command {
         {
           name: "member",
           match: "member",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           required: true,
           description: "Member to unmute",
         },
@@ -28,7 +28,7 @@ export default class UnmuteCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember }
   ) {
     await UnmuteCommand.unmute(args.member);

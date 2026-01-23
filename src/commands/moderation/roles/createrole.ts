@@ -1,4 +1,5 @@
 import {
+  ApplicationCommandOptionType,
   ColorResolvable,
   CommandInteraction,
   Guild,
@@ -22,14 +23,14 @@ export default class CreateRoleCommand extends Command {
       args: [
         {
           name: "name",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           description: "Name of role to create",
           required: true,
           match: "notLast",
         },
         {
           name: "color",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           description: "Color of role to create",
           required: true,
           match: "last",
@@ -47,7 +48,9 @@ export default class CreateRoleCommand extends Command {
 
     const role = await (message.guild as Guild).roles.create({
       name: args.name,
-      color: color as ColorResolvable,
+      colors: {
+        primaryColor: color as ColorResolvable,
+      }
     });
     await message.reply(`<@&${role.id}> has been created.`);
   }

@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentContentReturnValue } from "../../framework/Typings";
 
@@ -17,7 +17,7 @@ export default class EvalCommand extends Command {
         {
           name: "code",
           description: "Code to evaluate",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           required: true,
         },
@@ -26,7 +26,7 @@ export default class EvalCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentContentReturnValue
   ) {
     let evaledCode = "Error";
@@ -37,11 +37,10 @@ export default class EvalCommand extends Command {
       evaledCode = (error as Error).message;
     }
 
-    const embed = new MessageEmbed({
-      title: "Evalute Code",
-      description: `\`\`\`js\n>${args.code}\n${evaledCode}\`\`\``,
-      color: "BLUE",
-    });
+    const embed = new EmbedBuilder()
+      .setTitle("Evalute Code")
+      .setDescription(`\`\`\`js\n>${args.code}\n${evaledCode}\`\`\``)
+      .setColor("Blue");
 
     await message.reply({ embeds: [embed] });
   }

@@ -1,4 +1,4 @@
-import { CommandInteraction, Guild, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Guild, Message, EmbedBuilder } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentUserReturnValue } from "../../framework/Typings";
 
@@ -15,7 +15,7 @@ export default class RolesCommand extends Command {
       args: [
         {
           name: "member",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           description:
             "Member to display roles of. If omitted, will display all roles. ",
           match: "content",
@@ -25,7 +25,7 @@ export default class RolesCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentUserReturnValue
   ) {
     let roles;
@@ -40,11 +40,8 @@ export default class RolesCommand extends Command {
     roles.sort((a, b) => b.comparePositionTo(a));
 
     const embeds = [];
-    let currentEmbed = new MessageEmbed({
-      title: `**__Roles list for ${
-        args.member ? args.member.displayName : "this server"
-      }:__**`,
-    });
+    let currentEmbed = new EmbedBuilder()
+      .setTitle(`**__Roles list for ${args.member ? args.member.displayName : "this server"}:__**`);
     let currentDescription = "";
 
     roles.forEach((role) => {
@@ -54,7 +51,7 @@ export default class RolesCommand extends Command {
         currentEmbed.setDescription(currentDescription);
         embeds.push(currentEmbed);
 
-        currentEmbed = new MessageEmbed({});
+        currentEmbed = new EmbedBuilder();
         currentDescription = "";
       }
       currentDescription += roleItem;

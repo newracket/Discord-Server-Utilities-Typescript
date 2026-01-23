@@ -1,4 +1,4 @@
-import { CommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentContentReturnValue } from "../../framework/Typings";
 import axios from "axios";
@@ -16,7 +16,7 @@ export default class DefineCommand extends Command {
         {
           name: "word",
           description: "Word to define",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           required: true,
         },
@@ -25,7 +25,7 @@ export default class DefineCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentContentReturnValue
   ) {
     if (!args.word) return message.reply("Word not specified.");

@@ -1,6 +1,7 @@
 import {
+  ApplicationCommandOptionType,
   Collection,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   GuildMember,
   Message,
   RoleResolvable,
@@ -28,7 +29,7 @@ export default class GiveCasCommand extends Command {
         {
           name: "member",
           description: "Member to give cas to",
-          type: "USER",
+          type: ApplicationCommandOptionType.User,
           match: "members",
           required: true,
         },
@@ -37,7 +38,7 @@ export default class GiveCasCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { member: GuildMember[] | GuildMember; times: number }
   ) {
     this.messagesToSend = {};
@@ -52,7 +53,7 @@ export default class GiveCasCommand extends Command {
 
     if (args.member.length === 0 && message instanceof Message) {
       const messageArgs = message.content.split(" ");
-      const members = await message?.guild?.members.fetch();
+      const members = message?.guild?.members.cache;
       if (members === undefined)
         return message.reply("Error when fetching members");
 
@@ -81,7 +82,7 @@ export default class GiveCasCommand extends Command {
   }
 
   async givecas(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     member: GuildMember
   ): Promise<any> {
     if (message.guild === null) return message.reply("Guild does not exist");

@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, Message } from "discord.js";
 import Command from "../../../framework/Command";
 import { ArgumentRoleReturnValue } from "../../../framework/Typings";
 
@@ -16,7 +16,7 @@ export default class DeleteRoleCommand extends Command {
       args: [
         {
           name: "role",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
           required: true,
           description: "Role to delete",
           match: "role",
@@ -26,7 +26,7 @@ export default class DeleteRoleCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentRoleReturnValue
   ) {
     const highestRole = (message.member as GuildMember).roles.highest;

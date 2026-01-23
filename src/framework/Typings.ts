@@ -7,33 +7,42 @@ import {
   ThreadChannel,
 } from "discord.js";
 
+export type EnvironmentVariables = {
+  prefix: string,
+  announcementsChannelId: string,
+  strikesChannelId: string,
+  logsChannelId: string,
+  geminiApiKey: string,
+};
+
 export interface CustomClientOptions extends ClientOptions {
   ownerID: string;
   ignorePermissions?: string[];
+  environment: EnvironmentVariables;
 }
 
 export type ArgumentOptions = ApplicationCommandOptionData & {
   match:
-    | "content"
-    | "role"
-    | "last"
-    | "notLast"
-    | "member"
-    | "members"
-    | "word"
-    | "channel";
+  | "content"
+  | "role"
+  | "last"
+  | "notLast"
+  | "member"
+  | "members"
+  | "word"
+  | "channel";
   required?: boolean;
 };
 
 export interface ArgumentReturnValue {
   [key: string]:
-    | string
-    | Role
-    | GuildMember
-    | GuildMember[]
-    | GuildChannel
-    | ThreadChannel
-    | number;
+  | string
+  | Role
+  | GuildMember
+  | GuildMember[]
+  | GuildChannel
+  | ThreadChannel
+  | number;
 }
 
 export interface ArgumentContentReturnValue extends ArgumentReturnValue {

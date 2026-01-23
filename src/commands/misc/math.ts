@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentContentReturnValue } from "../../framework/Typings";
 import { evaluate } from "mathjs";
@@ -16,7 +16,7 @@ export default class MathCommand extends Command {
         {
           name: "expression",
           description: "Math function to evaluate",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           match: "content",
           required: true,
         },
@@ -25,7 +25,7 @@ export default class MathCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: ArgumentContentReturnValue
   ) {
     let evaledCode;
@@ -35,11 +35,10 @@ export default class MathCommand extends Command {
       evaledCode = error;
     }
 
-    const embed = new MessageEmbed({
-      title: "Math Evaluator",
-      description: `\`\`\`js\n>${args.expression}\n${evaledCode}\`\`\``,
-      color: "BLUE",
-    });
+    const embed = new EmbedBuilder()
+      .setTitle("Math Evaluator")
+      .setDescription(`\`\`\`js\n>${args.expression}\n${evaledCode}\`\`\``)
+      .setColor("Blue");
 
     await message.reply({ embeds: [embed] });
   }

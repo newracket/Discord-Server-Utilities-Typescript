@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, Role } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Message, Role } from "discord.js";
 import Command from "../../../framework/Command";
 import Utils from "../../../framework/Utils";
 
@@ -17,56 +17,56 @@ export default class ModifyRoleCommand extends Command {
           name: "type",
           match: "word",
           description: "How to modify role",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
         },
         {
           name: "role",
           match: "role",
           description: "Role to modify",
-          type: "ROLE",
+          type: ApplicationCommandOptionType.Role,
         },
         {
           name: "value",
           match: "content",
           description: "New value",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
         },
       ],
       slashCommand: true,
       slashData: [
         {
-          type: "SUB_COMMAND",
+          type: ApplicationCommandOptionType.Subcommand,
           name: "name",
           description: "Modifies the name of a role",
           options: [
             {
               name: "role",
-              type: "ROLE",
+              type: ApplicationCommandOptionType.Role,
               description: "Role to modify",
               required: true,
             },
             {
               name: "value",
-              type: "STRING",
+              type: ApplicationCommandOptionType.String,
               description: "New value",
               required: true,
             },
           ],
         },
         {
-          type: "SUB_COMMAND",
+          type: ApplicationCommandOptionType.Subcommand,
           name: "color",
           description: "Modifies the color of a role",
           options: [
             {
               name: "role",
-              type: "ROLE",
+              type: ApplicationCommandOptionType.Role,
               description: "Role to modify",
               required: true,
             },
             {
               name: "value",
-              type: "STRING",
+              type: ApplicationCommandOptionType.String,
               description: "New value",
               required: true,
             },
@@ -77,7 +77,7 @@ export default class ModifyRoleCommand extends Command {
   }
 
   async execute(
-    message: Message | CommandInteraction,
+    message: Message | ChatInputCommandInteraction,
     args: { type: string; role: Role; value: string }
   ) {
     switch (args.type.toLowerCase()) {
@@ -91,7 +91,7 @@ export default class ModifyRoleCommand extends Command {
         if (newColor === null)
           return await message.reply("The color is invalid");
 
-        await args.role.setColor(newColor);
+        await args.role.setColors({ primaryColor: newColor });
         return await message.reply(
           `The new color of ${args.role.name} is ${args.role.hexColor}`
         );
