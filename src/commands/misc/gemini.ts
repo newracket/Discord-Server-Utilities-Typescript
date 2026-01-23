@@ -41,7 +41,7 @@ export default class DefineCommand extends Command {
 
     try {
       const response = await this.gemini.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemma-3-27b-it",
         contents: `Please respond to this prompt. Keep the response under 2000 characters. Prompt: \n${args.prompt}`,
       });
 
