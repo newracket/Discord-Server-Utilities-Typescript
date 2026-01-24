@@ -1,13 +1,12 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, Message, EmbedBuilder, TextChannel } from "discord.js";
 import Command from "../../framework/Command";
 import { ArgumentContentReturnValue } from "../../framework/Typings";
-import axios from "axios";
-import { GoogleGenAI } from "@google/genai";
 import CustomClient from "../../framework/CustomClient";
+import { AIService, AIProviderType } from "../../framework/AIService";
 import Utils from "../../framework/Utils";
 
-export default class DefineCommand extends Command {
-  readonly gemini: GoogleGenAI;
+export default class GeminiCommand extends Command {
+  readonly aiProvider: AIService;
 
   constructor(client: CustomClient) {
     super({
@@ -28,7 +27,7 @@ export default class DefineCommand extends Command {
       ],
     });
 
-    this.gemini = new GoogleGenAI({ apiKey: client.environment.geminiApiKey });
+    this.aiProvider = new AIService(client.environment);
   }
 
   async execute(
@@ -40,16 +39,14 @@ export default class DefineCommand extends Command {
     const thinkingMessage = await message.reply("🤖 Gemini is thinking...");
 
     try {
-      const response = await this.gemini.models.generateContent({
-        model: "gemma-3-27b-it",
-        contents: `Please respond to this prompt. Keep the response under 2000 characters. Prompt: \n${args.prompt}`,
-      });
+      const response = await this.aiProvider.generateContent(AIProviderType.Groq, args.prompt);
 
-      if (!response.text) {
-        throw new Error("Gemini did not respond")
+      const messages = Utils.splitMessage(response.text);
+      await thinkingMessage.edit(messages[0]);
+
+      for (let i = 1; i < messages.length; i++) {
+        await (message.channel as TextChannel)?.send(messages[i]);
       }
-
-      await thinkingMessage.edit(response.text);
     } catch (error) {
       await thinkingMessage.edit(`Error: ${error}`);
     }

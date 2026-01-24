@@ -23,6 +23,7 @@ const client = new CustomClient(process.env.DISCORD_BOT_TOKEN!, {
     strikesChannelId: process.env.STRIKES_CHANNEL_ID!,
     logsChannelId: process.env.LOGS_CHANNEL_ID!,
     geminiApiKey: process.env.GEMINI_API_KEY!,
+    groqApiKey: process.env.GROQ_API_KEY!,
   }
 });
 

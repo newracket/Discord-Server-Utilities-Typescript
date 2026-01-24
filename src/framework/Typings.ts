@@ -13,6 +13,7 @@ export type EnvironmentVariables = {
   strikesChannelId: string,
   logsChannelId: string,
   geminiApiKey: string,
+  groqApiKey: string,
 };
 
 export interface CustomClientOptions extends ClientOptions {
