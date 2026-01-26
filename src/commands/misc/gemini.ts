@@ -13,7 +13,7 @@ export default class GeminiCommand extends Command {
       name: "gemini",
       usage: "gemini <prompt to ask gemini>",
       description: "Asks gemini a prompt",
-      aliases: ["g", "chat", "ask", "prompt"],
+      aliases: ["chat", "ask", "prompt"],
       category: "Misc",
       slashCommand: true,
       args: [
