@@ -27,6 +27,7 @@ export default class Command {
   hidden: boolean;
   ownerOnly: boolean;
   allowedRoles: string[] | undefined;
+  allowedMembers: string[] | undefined;
   slashCommand: boolean;
   slashData: ApplicationCommandOptionData[] | undefined;
   userPermissions: string[] | undefined;
@@ -43,6 +44,7 @@ export default class Command {
     hidden?: boolean;
     ownerOnly?: boolean;
     allowedRoles?: string[];
+    allowedMembers?: string[];
     userPermissions?: string[];
     slashCommand?: boolean;
     slashData?: ApplicationCommandOptionData[];
@@ -57,6 +59,7 @@ export default class Command {
     this.hidden = options?.hidden === true;
     this.ownerOnly = options?.ownerOnly === true;
     this.allowedRoles = options?.allowedRoles;
+    this.allowedMembers = options?.allowedMembers;
     this.userPermissions = options?.userPermissions;
     this.slashCommand = options?.slashCommand === true;
     this.slashData = options?.slashData;
@@ -93,6 +96,16 @@ export default class Command {
         `Missing permissions. One of these roles are required: ${this.allowedRoles
           .map((e) => message.guild?.roles.cache.get(e)?.name)
           .join(", ")}`
+      );
+    }
+
+    if (
+      this.allowedMembers !== undefined &&
+      !this.allowedMembers.includes(authorId) &&
+      !ignorePermissions.includes(authorId)
+    ) {
+      return await message.reply(
+        "Missing permissions. You are not authorized to use this command."
       );
     }
 
@@ -208,7 +221,7 @@ export default class Command {
     message: Message | ChatInputCommandInteraction,
     args: ArgumentReturnValue,
     client?: CustomClient
-  ): Promise<any> {}
+  ): Promise<any> { }
 
   async handleInteraction(interaction: ChatInputCommandInteraction, client: CustomClient) {
     let commandArgs: ArgumentReturnValue = {};
@@ -243,7 +256,7 @@ export default class Command {
       case ApplicationCommandOptionType.Subcommand: {
         const commandArgs: any = {};
         commandArgs.type = options.name;
-        
+
         options.options?.forEach((o) => {
           commandArgs[o.name] = this.getInteractionOptionValue(o);
         });

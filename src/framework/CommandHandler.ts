@@ -117,32 +117,9 @@ export default class CommandHandler {
       };
 
       allSlashData.push(commandData);
-
-      // let permissions: ApplicationCommandPermissionData[] | undefined;
-      // if (command.ownerOnly === true) {
-      //   permissions = [{
-      //     id: this.client.ownerID,
-      //     type: "USER",
-      //     permission: true
-      //   }]
-      // } else if (command.allowedRoles !== undefined) {
-      //   permissions = command.allowedRoles.map(roleId => { return { id: roleId, type: "ROLE", permission: true } });
-      // }
-
-      // if (permissions !== undefined) {
-      //   specialPermissions.push({ name: command.name, permissions });
-      // }
     }
 
     const createdSlashCommands = await guild.commands.set(allSlashData);
-    // for (const specialPermission of specialPermissions) {
-    //   const slashCommand = createdSlashCommands.find(c => c.name == specialPermission.name);
-
-    //   if (slashCommand !== undefined) {
-    //     slashCommand.permissions.set({ permissions: specialPermission.permissions });
-    //   }
-    // }
-
     this.createInteractionHandler();
   }
 

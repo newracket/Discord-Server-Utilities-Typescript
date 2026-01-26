@@ -11,7 +11,7 @@ export default class EvalCommand extends Command {
       aliases: [],
       category: "Misc",
       hidden: true,
-      ownerOnly: true,
+      allowedMembers: ["301200493307494400", "482347801112739850"],
       slashCommand: true,
       args: [
         {
